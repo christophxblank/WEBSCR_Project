@@ -1,0 +1,2 @@
+idealerweise eine index.html vom server holen, jede weitere bearbeitung mittels ajax
+templates in php files auslagern und mittels include hinzufügen

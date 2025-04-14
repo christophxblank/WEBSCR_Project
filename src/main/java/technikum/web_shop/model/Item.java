@@ -11,18 +11,20 @@ public class Item {
 
     private String name;
     private String price;  //als varchar ind DB?
-
     private int stock;
-
     private String description;
 
-    @Column(name = "category_id")
-    private int categoryId;
+    @ManyToOne
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
+    private Category category;
 
     @Column(name = "image_url")
     private String imageUrl;
 
     public Item() {}
+
+
+
 
     public Item(int id, String name, String price, int stock, String description, int categoryId, String imageUrl) {
         this.id = id;
@@ -30,7 +32,6 @@ public class Item {
         this.price = price;
         this.stock = stock;
         this.description = description;
-        this.categoryId = categoryId;
         this.imageUrl = imageUrl;
     }
     public int getId() {
@@ -73,19 +74,18 @@ public class Item {
         this.description = description;
     }
 
-    public int getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(int categoryId) {
-        this.categoryId = categoryId;
-    }
-
     public String getImageUrl() {
         return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

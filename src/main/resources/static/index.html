@@ -1,18 +1,29 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+          integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+
+
     <title>Testpage</title>
+
     <script src="firstScript.js"></script>
 </head>
 <body>
 
-<h1>DB Connection Test:</h1>
-<div id="itemsList"></div>
+<h1>DB Connection Test:</h1></br>
+<div class="row">
+    <div class="col" id="categories">
+        <h2>Categories</h2>
+        <ul id="categoryList"></ul>
+    </div>
+<div class="col-9" id="itemsList"></div>
 
 
+</div>
 </body>
 </html>

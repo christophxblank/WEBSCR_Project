@@ -24,9 +24,7 @@ public class Item {
     public Item() {}
 
 
-
-
-    public Item(int id, String name, String price, int stock, String description, int categoryId, String imageUrl) {
+    public Item(int id, String name, String price, int stock, String description, String imageUrl) {
         this.id = id;
         this.name = name;
         this.price = price;

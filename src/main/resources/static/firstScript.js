@@ -5,7 +5,7 @@ async function includeHTML(id, file) {      //head und navbar inkludieren
 }
 
 function loadItems(){
-    fetch("/api/items")
+    fetch("/items")
         .then(res => res.json())
         .then(data => {
             let htmlCode = "";
@@ -50,7 +50,7 @@ function loadItems(){
 }
 
 function loadCategories(){
-    fetch("/api/categories")
+    fetch("/categories")
         .then(res => res.json())
         .then(data => {
             let htmlCode = "";
@@ -62,7 +62,7 @@ function loadCategories(){
 }
 
 function loadUsers(){
-    fetch("/api/users")
+    fetch("/users")
         .then(res => res.json())
         .then(data => {
             let htmlCode = "";

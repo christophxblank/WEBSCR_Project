@@ -9,7 +9,7 @@ import java.util.List;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/items")
+@RequestMapping("/items")
 public class ItemController {
 
     @Autowired

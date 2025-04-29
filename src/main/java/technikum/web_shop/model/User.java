@@ -10,7 +10,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-
+    private String title;
     private String username;
     private String password;
     private String email;
@@ -30,7 +30,7 @@ public class User {
 
 public User() {}
 
-    public User(String username, String password, String email, String role, String phone, String firstName, String lastName, boolean isActive, Address address, PaymentMethod paymentMethod) {
+    public User(String username, String password, String email, String role, String phone, String firstName, String lastName, String title,boolean isActive, Address address, PaymentMethod paymentMethod) {
 
         this.username = username;
         this.password = password;
@@ -39,6 +39,7 @@ public User() {}
         this.phone = phone;
         this.firstname = firstName;
         this.lastname = lastName;
+        this.title = title;
         this.active =active;
         this.address = address;
         this.paymentMethod = paymentMethod;
@@ -132,5 +133,10 @@ public User() {}
         this.active = active;
     }
 
-
+    public String getTitle() {
+        return title;
+    }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }

@@ -4,7 +4,7 @@ package technikum.web_shop.model;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "adress")
+@Table(name = "address")
 public class Address {
 
     @Id

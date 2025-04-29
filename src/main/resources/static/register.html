@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registrierung</title>
+    <div id="head-container"></div>
+</head>
+<body>
+<div id="navbar-container"></div>
+<div class="container mt-5">
+    <h1>Neues Konto anlegen</h1>
+    <form id="registerForm" novalidate>
+        <!-- Titel -->
+        <div class="mb-3">
+            <label for="title" class="form-label">Titel</label>
+            <select id="title" name="title" class="form-select" required>
+                <option value="">Bitte wählen</option>
+                <option>Herr</option>
+                <option>Frau</option>
+            </select>
+            <div class="invalid-feedback">Bitte Titel auswählen.</div>
+        </div>
+        <!-- Vorname -->
+        <div class="mb-3">
+            <label for="firstname" class="form-label">Vorname</label>
+            <input type="text" id="firstname" name="firstname" class="form-control" required>
+            <div class="invalid-feedback">Vorname erforderlich.</div>
+        </div>
+        <!-- Nachname -->
+        <div class="mb-3">
+            <label for="lastname" class="form-label">Nachname</label>
+            <input type="text" id="lastname" name="lastname" class="form-control" required>
+            <div class="invalid-feedback">Nachname erforderlich.</div>
+        </div>
+        <!-- E-Mail -->
+        <div class="mb-3">
+            <label for="email" class="form-label">E-Mail</label>
+            <input type="email" id="email" name="email" class="form-control" required>
+            <div class="invalid-feedback">E-Mail erforderlich.</div>
+        </div>
+        <!-- Username -->
+        <div class="mb-3">
+            <label for="username" class="form-label">Benutzername</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+            <div class="invalid-feedback">Benutzername erforderlich.</div>
+        </div>
+        <!-- Telefon -->
+        <div class="mb-3">
+            <label for="phone" class="form-label">Telefon</label>
+            <input type="tel" id="phone" name="phone" class="form-control">
+        </div>
+        <!-- Passwort -->
+        <div class="mb-3">
+            <label for="password" class="form-label">Passwort</label>
+            <input type="password" id="password" name="password" class="form-control" minlength="8" required>
+            <div class="invalid-feedback">Passwort muss mind. 8 Zeichen lang sein.</div>
+        </div>
+        <!-- Passwort bestätigen -->
+        <div class="mb-3">
+            <label for="password_confirm" class="form-label">Passwort wiederholen</label>
+            <input type="password" id="password_confirm" name="password_confirm" class="form-control" required>
+            <div class="invalid-feedback">Passwörter stimmen nicht überein.</div>
+        </div>
+        <!-- Adress- und Zahlungs-FK (als Hidden/Freitext oder Auswahlliste entsprechend eurer Relationstabellen) -->
+        <div class="mb-3">
+            <label for="adress_fk" class="form-label">Adress-ID</label>
+            <input type="number" id="adress_fk" name="adress_fk" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="payment_fk" class="form-label">Zahlungs-ID</label>
+            <input type="number" id="payment_fk" name="payment_fk" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Registrieren</button>
+    </form>
+</div>
+<script src="firstScript.js"></script>
+<script src="2ndScript.js"></script>
+<script src="register.js"></script>
+</body>
+</html>

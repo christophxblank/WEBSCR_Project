@@ -24,10 +24,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Tabellenstruktur für Tabelle `adress`
+-- Tabellenstruktur für Tabelle `address`
 --
 
-CREATE TABLE `adress` (
+CREATE TABLE `address` (
   `id` int(10) NOT NULL,
   `street` varchar(255) DEFAULT NULL,
   `city` varchar(255) DEFAULT NULL,
@@ -36,10 +36,10 @@ CREATE TABLE `adress` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Daten für Tabelle `adress`
+-- Daten für Tabelle `address`
 --
 
-INSERT INTO `adress` (`id`, `street`, `city`, `country`, `plz`) VALUES
+INSERT INTO `address` (`id`, `street`, `city`, `country`, `plz`) VALUES
 (1, 'Höchstädtplatz 23', 'Vienna', 'Austria ', '1070'),
 (2, 'Teststreet 33', 'Madrid', 'Spain', '29384');
 
@@ -199,9 +199,9 @@ INSERT INTO `user` (`id`, `username`, `email`, `password`, `firstname`, `lastnam
 --
 
 --
--- Indizes für die Tabelle `adress`
+-- Indizes für die Tabelle `address`
 --
-ALTER TABLE `adress`
+ALTER TABLE `address`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -261,9 +261,9 @@ ALTER TABLE `user`
 --
 
 --
--- AUTO_INCREMENT für Tabelle `adress`
+-- AUTO_INCREMENT für Tabelle `address`
 --
-ALTER TABLE `adress`
+ALTER TABLE `address`
   MODIFY `id` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
@@ -328,7 +328,7 @@ ALTER TABLE `item`
 -- Constraints der Tabelle `user`
 --
 ALTER TABLE `user`
-  ADD CONSTRAINT `FKi7x2mj4prb7t0cdqavymirkew` FOREIGN KEY (`adress_fk`) REFERENCES `adress` (`id`),
+  ADD CONSTRAINT `FKi7x2mj4prb7t0cdqavymirkew` FOREIGN KEY (`adress_fk`) REFERENCES `address` (`id`),
   ADD CONSTRAINT `FKspx2jd1jq9g5w1gpcpcfebf0u` FOREIGN KEY (`payment_fk`) REFERENCES `payment_methods` (`id`);
 COMMIT;
 

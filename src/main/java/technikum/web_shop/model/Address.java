@@ -1,24 +1,24 @@
 package technikum.web_shop.model;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "adress")
-public class Adress {
+public class Address {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
     private String street;
     private String city;
     private String plz;
     private String country;
 
-    public Adress() {}
+    public Address() {}
 
-    public Adress(int id, String street, String city, String postalCode, String country) {
+    public Address(int id, String street, String city, String postalCode, String country) {
         this.id = id;
         this.street = street;
         this.city = city;

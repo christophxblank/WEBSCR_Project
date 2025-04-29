@@ -23,6 +23,6 @@ noch offen:
 /orders
 /inovices
 /Coupons
-/adress
+/address
 
 

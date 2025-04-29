@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     private String username;
@@ -21,7 +22,7 @@ public class User {
 
     @ManyToOne
     @JoinColumn(name = "adress_fk")
-    private Adress adress;
+    private Address address;
 
     @ManyToOne
     @JoinColumn(name = "payment_fk")
@@ -29,7 +30,7 @@ public class User {
 
 public User() {}
 
-    public User(String username, String password, String email, String role, String phone, String firstName, String lastName, boolean isActive, Adress adress, PaymentMethod paymentMethod) {
+    public User(String username, String password, String email, String role, String phone, String firstName, String lastName, boolean isActive, Address address, PaymentMethod paymentMethod) {
 
         this.username = username;
         this.password = password;
@@ -39,16 +40,16 @@ public User() {}
         this.firstname = firstName;
         this.lastname = lastName;
         this.active =active;
-        this.adress = adress;
+        this.address = address;
         this.paymentMethod = paymentMethod;
     }
 
-    public Adress getAdress() {
-        return adress;
+    public Address getAddress() {
+        return address;
     }
 
-    public void setAdress(Adress adress) {
-        this.adress = adress;
+    public void setAddress(Address address) {
+        this.address = address;
     }
 
     public PaymentMethod getPaymentMethod() {
@@ -130,4 +131,6 @@ public User() {}
     public void setActive(boolean active) {
         this.active = active;
     }
+
+
 }

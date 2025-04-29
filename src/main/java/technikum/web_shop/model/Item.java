@@ -2,15 +2,18 @@ package technikum.web_shop.model;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "item")
 public class Item {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     private String name;
-    private String price;  //als varchar ind DB?
+    private BigDecimal price;
     private int stock;
     private String description;
 
@@ -24,7 +27,7 @@ public class Item {
     public Item() {}
 
 
-    public Item(int id, String name, String price, int stock, String description, String imageUrl) {
+    public Item(int id, String name, BigDecimal price, int stock, String description, String imageUrl) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -48,11 +51,11 @@ public class Item {
         this.name = name;
     }
 
-    public String getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 

@@ -28,10 +28,6 @@ public class UserController {
         return userRepository.findById((long) id).orElse(null);
     }
 
-    @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userRepository.save(user);
-    }
 
     @PatchMapping("/{id}")
     public User patchUser(@PathVariable int id, @RequestBody Map<String, Object> updates) {

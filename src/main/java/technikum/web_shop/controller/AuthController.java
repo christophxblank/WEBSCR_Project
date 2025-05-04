@@ -60,4 +60,14 @@ public class AuthController {
                     .body(new AuthResponse(false, List.of("Ungültige Zugangsdaten")));
         }
     }
+
+    /** Liefert zurück: { authenticated: boolean, role: "guest"|"customer"|"admin" } */
+    @GetMapping("/session")
+    public ResponseEntity<SessionResponse> session(HttpSession session) {
+        boolean auth = session.getAttribute("userId") != null;
+        String role = auth
+                ? session.getAttribute("userRole").toString()
+                : "guest";
+        return ResponseEntity.ok(new SessionResponse(auth, role));
+    }
 }

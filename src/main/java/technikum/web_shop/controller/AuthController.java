@@ -9,6 +9,7 @@ import java.util.List;
 import technikum.web_shop.dto.RegisterRequest;
 import technikum.web_shop.dto.LoginRequest;
 import technikum.web_shop.dto.AuthResponse;
+import technikum.web_shop.dto.SessionResponse;
 import technikum.web_shop.service.UserService;
 
 @RestController

@@ -4,49 +4,57 @@ async function includeHTML(id, file) {      //head und navbar inkludieren
     document.getElementById(id).innerHTML = htmlText;
 }
 
-function loadItems(){
-    fetch("/items")
-        .then(res => res.json())
-        .then(data => {
-            let htmlCode = "";
-            for (let item of data) {
-                htmlCode += `<article>
-                            <strong>${item.name}</strong><br>
-                            <small>${item.price} €</small><br>
-                            <small>${item.description}</small><br>
-                            <small>${item.category.name}</small><br>
-                            <small><img src="${item.imageUrl}" style="max-width: 150px; height: auto;">
-                            <button type="button" class="btn btn-primary add-to-cart" data-id="${item.id}" data-name="${item.name}" type="submit">Add to Cart</button></small><br>
-                         </article><hr>`;
-            }
-            document.getElementById("itemsList").innerHTML = htmlCode;
+async function loadItems(categoryId) {
+    const itemContainer = document.getElementById('itemContainer');
+    if (!itemContainer) return; // Guard: nur auf der Produkte-Seite ausführen
 
-            document.querySelectorAll(".add-to-cart").forEach(button => {
-                button.addEventListener("click", function () {
-                    let item = {
-                        id: this.dataset.id,
-                        name: this.dataset.name,
-                    };
+    try {
+        // 1) Request an den korrekten API-Pfad
+        const resp = await fetch(`/api/items?categoryId=${categoryId}`);
+        if (!resp.ok) {
+            console.error('Items-Request fehlgeschlagen', resp.status);
+            return;
+        }
 
-                    fetch("/cart/add", {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(item)  // Nur ID senden
-                    })
-                        .then(response => {
-                            if (response.ok) {
-                                alert(`Item mit ID ${item.name} wurde zum Warenkorb hinzugefügt!`);
-                            } else {
-                                alert("Fehler beim Hinzufügen zum Warenkorb.");
-                            }
-                        });
-                });
-            });
+        // 2) JSON auslesen und normalisieren
+        const payload = await resp.json();
+        // payload kann direkt Array oder Objekt sein: { items: [...] }
+        const items = Array.isArray(payload)
+            ? payload
+            : Array.isArray(payload.items)
+                ? payload.items
+                : [];
 
+        // 3) Leeres Ergebnis anzeigen
+        if (items.length === 0) {
+            itemContainer.innerHTML = '<p class="text-muted">Keine Produkte gefunden.</p>';
+            return;
+        }
 
+        // 4) Produkte rendern
+        itemContainer.innerHTML = '';
+        items.forEach(item => {
+            const col = document.createElement('div');
+            col.className = 'col-md-4 mb-4';
+            col.innerHTML = `
+        <div class="card h-100">
+          <img src="${item.imageUrl}" class="card-img-top" alt="${item.name}">
+          <div class="card-body">
+            <h5 class="card-title">${item.name}</h5>
+            <p class="card-text">€${item.price}</p>
+            ${item.rating != null ? `<p class="card-text">⭐ ${item.rating}</p>` : ''}
+            <button class="btn btn-primary" onclick="addToCart(${item.id})">
+              In den Warenkorb
+            </button>
+          </div>
+        </div>
+      `;
+            itemContainer.appendChild(col);
         });
+
+    } catch (err) {
+        console.error('Fehler beim Laden der Produkte', err);
+    }
 }
 
 function loadCategories(){
@@ -70,7 +78,7 @@ function loadUsers(){
                 htmlCode += `<article>
                             <strong>${user.username}</strong><br>
                             <small>${user.phone}</small><br>
-                            <small>${user.adress.street}</small><br>
+                            <small>${user.address.street}</small><br>
                             <small>${user.paymentMethod.name}</small><br>
                             <br>
                          </article><hr>`;
@@ -107,11 +115,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     await includeHTML("head-container", "./include/head.html");
     await includeHTML("navbar-container", "./include/navbar.html");
     setupCart();
-    loadCategories();
-    loadItems();
-    loadUsers();
+});
 
-    });
+document.addEventListener('DOMContentLoaded', () => {
+    const catContainer = document.getElementById('categoryContainer');
+    if (catContainer) {
+        loadCategories();
+    }
+
+    const userTable = document.getElementById('userTable');
+    if (userTable) {
+        loadUsers();
+    }
+});
 function setupCart() {
     const cart = document.getElementById("cart");
     if (cart) {

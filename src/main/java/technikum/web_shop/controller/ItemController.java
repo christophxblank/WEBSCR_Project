@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import technikum.web_shop.model.Category;
 import technikum.web_shop.model.Item;
 import technikum.web_shop.repositories.ItemRepository;
+import technikum.web_shop.dto.ItemDTO;
+import technikum.web_shop.service.ItemService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,11 +14,16 @@ import java.util.Map;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/items")
+@RequestMapping("/api")
 public class ItemController {
 
     @Autowired
     private ItemRepository itemRepository;
+    private final ItemService itemService;
+
+    public ItemController(ItemService itemService) {
+        this.itemService = itemService;
+    }
 
     @GetMapping
     public List<Item> getAllItems() {
@@ -24,7 +31,7 @@ public class ItemController {
     }
 
     @GetMapping("/{id}")
-    public Item getItemById(@PathVariable int id) {
+    public Item getItemById(@PathVariable long id) {
         return itemRepository.findById(id).orElse(null);
     }
 
@@ -39,12 +46,12 @@ public class ItemController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteItem(@PathVariable int id) {
+    public void deleteItem(@PathVariable long id) {
         itemRepository.deleteById(id);
     }
 
     @PatchMapping("/{id}")
-    public Item patchItem(@PathVariable int id, @RequestBody Map<String, Object> updates) {
+    public Item patchItem(@PathVariable long id, @RequestBody Map<String, Object> updates) {
         Item item = itemRepository.findById(id).orElse(null);
         if (item == null) return null;
 
@@ -69,5 +76,13 @@ public class ItemController {
         return itemRepository.save(item);
     }
 
+    @GetMapping("/categories")
+    public List<Category> getCategories() {
+        return itemService.getAllCategories();
+    }
 
+    @GetMapping("/items")
+    public List<ItemDTO> getItems(@RequestParam Long categoryId) {
+        return itemService.getItemsByCategory(categoryId);
+    }
 }

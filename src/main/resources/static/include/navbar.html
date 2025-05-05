@@ -5,27 +5,39 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
-
+                <li id="nav-home" class="nav-item">
+                    <a class="nav-link" href="../index.html">Home</a>
+                </li>
                 <li class="nav-item">
                     <a id="useroverview" class="nav-link active" aria-current="page" href="../index.html?menu=user">Benutzer</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="../index.html?menu=products">Produkte</a>
+                    <a class="nav-link active" aria-current="page" href="../products.html">Produkte</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" id="cart" href="">Warenkorb</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../static/login.html">Login</a>
+                <li id="nav-admin-products"   class="nav-item d-none">
+                    <a class="nav-link" href="/admin/products.html">Produkte bearbeiten</a>
+                </li>
+                <li id="nav-admin-customers"  class="nav-item d-none">
+                    <a class="nav-link" href="/admin/customers.html">Kunden bearbeiten</a>
+                </li>
+                <li id="nav-admin-vouchers"   class="nav-item d-none">
+                    <a class="nav-link" href="/admin/vouchers.html">Gutscheine verwalten</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../static/register.html">Registrierung</a>
+                    <a class="nav-link" href="../login.html">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../register.html">Registrierung</a>
+                </li>
+                <li id="nav-logout" class="nav-item d-none">
+                    <a class="nav-link" href="#" id="logoutLink">Logout</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="">Suchen</a>
                 </li>
-
-
             </ul>
 
         </div>

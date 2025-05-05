@@ -9,6 +9,7 @@ import java.util.List;
 import technikum.web_shop.dto.RegisterRequest;
 import technikum.web_shop.dto.LoginRequest;
 import technikum.web_shop.dto.AuthResponse;
+import technikum.web_shop.dto.SessionResponse;
 import technikum.web_shop.service.UserService;
 
 @RestController
@@ -59,5 +60,15 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(new AuthResponse(false, List.of("Ungültige Zugangsdaten")));
         }
+    }
+
+    /** Liefert zurück: { authenticated: boolean, role: "guest"|"customer"|"admin" } */
+    @GetMapping("/session")
+    public ResponseEntity<SessionResponse> session(HttpSession session) {
+        boolean auth = session.getAttribute("userId") != null;
+        String role = auth
+                ? session.getAttribute("userRole").toString()
+                : "guest";
+        return ResponseEntity.ok(new SessionResponse(auth, role));
     }
 }

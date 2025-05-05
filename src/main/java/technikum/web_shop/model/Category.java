@@ -8,17 +8,17 @@ public class Category {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     private String name;
     public Category() {}
 
-    public Category(int id, String name) {
+    public Category(long id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    public int getId() { return id; }
+    public long getId() { return id; }
 
     public void setId(int id) { this.id = id; }
 

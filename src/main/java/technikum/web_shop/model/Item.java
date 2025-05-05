@@ -10,12 +10,13 @@ public class Item {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private long id;
 
     private String name;
     private BigDecimal price;
     private int stock;
     private String description;
+    private Double rating;
 
     @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
@@ -27,15 +28,16 @@ public class Item {
     public Item() {}
 
 
-    public Item(int id, String name, BigDecimal price, int stock, String description, String imageUrl) {
+    public Item(long id, String name, BigDecimal price, int stock, String description, String imageUrl, Double rating) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.stock = stock;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.rating = rating;
     }
-    public int getId() {
+    public long getId() {
         return id;
     }
 
@@ -86,7 +88,12 @@ public class Item {
     public Category getCategory() {
         return category;
     }
+
     public void setCategory(Category category) {
         this.category = category;
     }
+
+    public Double getRating() { return rating; }
+
+    public void setRating(Double rating) { this.rating = rating; }
 }

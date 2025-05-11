@@ -1,6 +1,8 @@
 package technikum.web_shop.controller;
 
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import technikum.web_shop.dto.ItemDTO;
 import technikum.web_shop.service.ItemService;
@@ -24,6 +26,12 @@ public class SessionController {
         // sorgt dafür, dass die JSESSIONID gesetzt wird
         session.setAttribute("username", "admin");
         return session.getId();
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/cart/add/{id}")

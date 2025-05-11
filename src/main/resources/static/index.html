@@ -40,7 +40,7 @@
                     <a class="nav-link active" id="product_overview" aria-current="page" href="#">Produkte</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" id="cart" href="">Warenkorb</a>
+                    <a class="nav-link active" aria-current="page" id="cart" href="#">Warenkorb</a>
                 </li>
                 <li id="nav-admin-products"   class="nav-item d-none">
                     <a class="nav-link" href="/admin/products.html">Produkte bearbeiten</a>
@@ -61,9 +61,20 @@
                     <a class="nav-link" href="#" id="logoutLink">Logout</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="">Suchen</a>
+                    <a class="nav-link active" aria-current="page" href="#">Suchen</a>
                 </li>
             </ul>
+            <form class="d-flex" role="search">
+                <input
+                        class="form-control me-2"
+                        type="search"
+                        placeholder="Suche"
+                        aria-label="Suche"
+                />
+                <button class="btn btn-outline-success" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </form>
         </div>
     </div>
 </nav>

@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loginLi?.classList.remove('d-none');
         registerLi?.classList.remove('d-none');
         logoutLi?.classList.add('d-none');
-        cartLi?.classList.add('d-none');
+
         accountLi?.classList.add('d-none');
         adminProducts?.classList.add('d-none');
         adminCustomers?.classList.add('d-none');
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loginLi?.classList.add('d-none');
         registerLi?.classList.add('d-none');
         logoutLi?.classList.remove('d-none');
-        cartLi?.classList.remove('d-none');
+
 
         // Konto oder Admin-Links je nach Rolle
         if (session.role === 'customer') {

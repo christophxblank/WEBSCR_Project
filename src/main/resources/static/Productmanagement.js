@@ -77,10 +77,10 @@ function loadItems(categoryId = null) {
                    alt="${item.name}">
               <div class="card-body">
                 <h5 class="card-title">${item.name}</h5>
-                <p class="card-text">${item.price} €</p>
                 <p class="card-text">${item.description}</p>
-                <button class="btn btn-primary"
-                        onclick="addToCart(${item.id})">
+                 <p class="card-text">Bewertung: ${item.rating}</p>
+                <p class="card-text" style="margin-top: auto">${item.price} €</p>    
+                <button class="btn btn-primary" style="margin-top: auto"  onclick="addToCart(${item.id})">
                   In den Warenkorb
                 </button>
               </div>

@@ -1,151 +1,124 @@
-async function includeHTML(id, file) {      //head und navbar inkludieren
-    const res = await fetch(file);
-    const htmlText = await res.text();
-    document.getElementById(id).innerHTML = htmlText;
-}
-
-async function loadItems(categoryId) {
-    const itemContainer = document.getElementById('itemContainer');
-    if (!itemContainer) return; // Guard: nur auf der Produkte-Seite ausführen
-
-    try {
-        // 1) Request an den korrekten API-Pfad
-        const resp = await fetch(`/api/items?categoryId=${categoryId}`);
-        if (!resp.ok) {
-            console.error('Items-Request fehlgeschlagen', resp.status);
-            return;
-        }
-
-        // 2) JSON auslesen und normalisieren
-        const payload = await resp.json();
-        // payload kann direkt Array oder Objekt sein: { items: [...] }
-        const items = Array.isArray(payload)
-            ? payload
-            : Array.isArray(payload.items)
-                ? payload.items
-                : [];
-
-        // 3) Leeres Ergebnis anzeigen
-        if (items.length === 0) {
-            itemContainer.innerHTML = '<p class="text-muted">Keine Produkte gefunden.</p>';
-            return;
-        }
-
-        // 4) Produkte rendern
-        itemContainer.innerHTML = '';
-        items.forEach(item => {
-            const col = document.createElement('div');
-            col.className = 'col-md-4 mb-4';
-            col.innerHTML = `
-        <div class="card h-100">
-          <img src="${item.imageUrl}" class="card-img-top" alt="${item.name}">
-          <div class="card-body">
-            <h5 class="card-title">${item.name}</h5>
-            <p class="card-text">€${item.price}</p>
-            ${item.rating != null ? `<p class="card-text">⭐ ${item.rating}</p>` : ''}
-            <button class="btn btn-primary" onclick="addToCart(${item.id})">
-              In den Warenkorb
-            </button>
-          </div>
-        </div>
-      `;
-            itemContainer.appendChild(col);
-        });
-
-    } catch (err) {
-        console.error('Fehler beim Laden der Produkte', err);
-    }
-}
-
-function loadCategories(){
-    fetch("/categories")
-        .then(res => res.json())
-        .then(data => {
-            let htmlCode = "";
-            for (let category of data) {
-                htmlCode += `<option value="${category.id}">${category.name}</option>`;
-            }
-            document.getElementById("categoryList").innerHTML = htmlCode;
-        });
-}
-
-function loadUsers(){
-    fetch("/users")
-        .then(res => res.json())
-        .then(data => {
-            let htmlCode = "";
-            for (let user of data) {
-                htmlCode += `<article>
-                            <strong>${user.username}</strong><br>
-                            <small>${user.phone}</small><br>
-                            <small>${user.address.street}</small><br>
-                            <small>${user.paymentMethod.name}</small><br>
-                            <br>
-                         </article><hr>`;
-            }
-            document.getElementById("userList").innerHTML = htmlCode;
-        });
-}
-
-
-function loadCart() {
-    fetch("/cart")
-        .then(res => res.json())
-        .then(cart => {
-            let html = "";
-
-            if (cart.length === 0) {
-                html = "<p>Dein Warenkorb ist leer.</p>";
-            } else {
-                for (let item of cart) {
-                    html += `<p><strong>${item.name}</strong> - ${item.price || "Preis fehlt"} €</p>`;
-                }
-            }
-
-            document.getElementById("cartContent").innerHTML = html;
-            openCartModal();
-        });
-}
-
-
-
-
-
-document.addEventListener("DOMContentLoaded", async function () {
-    await includeHTML("head-container", "./include/head.html");
-    await includeHTML("navbar-container", "./include/navbar.html");
-    setupCart();
-});
+// app.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    const catContainer = document.getElementById('categoryContainer');
-    if (catContainer) {
-        loadCategories();
+    fetch('/session');    // Session initialisieren
+    loadCategories();
+    setupCart();
+    loadItems();
+});
+
+function loadCategories() {
+    const container = document.getElementById('categories-container');
+    if (!container) return;
+
+    container.innerHTML = '';  // Reset
+    fetch('/categories')
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = 'list-group-item list-group-item-action';
+                btn.textContent = cat.name;
+                btn.addEventListener('click', () => {
+                    loadItems(cat.id);
+                    // Aktive Markierung
+                    container.querySelectorAll('button')
+                        .forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+                container.appendChild(btn);
+            });
+        })
+        .catch(err => console.error('Fehler beim Laden der Kategorien:', err));
+}
+
+function loadItems(categoryId = null) {
+    let url = '/items';
+    if (categoryId !== null) {
+        url += `?categoryId=${encodeURIComponent(categoryId)}`;
     }
 
-    const userTable = document.getElementById('userTable');
-    if (userTable) {
-        loadUsers();
-    }
-});
-function setupCart() {
-    const cart = document.getElementById("cart");
-    if (cart) {
-        cart.addEventListener("click", function () {
-            event.preventDefault();
-            loadCart();
+    fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error('Netzwerk-Fehler beim Laden der Items');
+            return res.json();
+        })
+        .then(data => {
+            const list = document.getElementById('itemsList');
+            list.innerHTML = '';  // Reset
+            data.forEach(item => {
+                list.insertAdjacentHTML('beforeend', `
+          <div class="col-md-4 mb-4">
+            <div class="card h-100">
+              <img src="${item.image_url}"
+                   class="card-img-top fixed-img"
+                   alt="${item.name}">
+              <div class="card-body">
+                <h5 class="card-title">${item.name}</h5>
+                <p class="card-text">${item.price} €</p>
+                <p class="card-text">${item.description}</p>
+                <button class="btn btn-primary"
+                        onclick="addToCart(${item.id})">
+                  In den Warenkorb
+                </button>
+              </div>
+            </div>
+          </div>
+        `);
+            });
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById('itemsList').innerHTML =
+                '<p>Fehler beim Laden der Artikel.</p>';
         });
-    } else {
-        console.error("Cart nicht gefunden!");
-    }
+}
+
+function setupCart() {
+    const cartBtn = document.getElementById('cart');
+    if (!cartBtn) return;
+    cartBtn.addEventListener('click', e => {
+        e.preventDefault();
+        loadCart();
+    });
+}
+
+function loadCart() {
+    fetch('/cart')
+        .then(res => res.json())
+        .then(cart => {
+            let html = '';
+            if (cart.length === 0) {
+                html = '<p>Dein Warenkorb ist leer.</p>';
+            } else {
+                cart.forEach(item => {
+                    html += `<p><strong>${item.name}</strong> - ${item.price} €</p>`;
+                });
+            }
+            document.getElementById('cartContent').innerHTML = html;
+            openCartModal();
+        })
+        .catch(err => console.error('Fehler beim Laden des Warenkorbs:', err));
+}
+
+function addToCart(id) {
+    fetch(`/cart/add/${id}`, { method: 'POST' })
+        .then(res => {
+            if (res.ok) {
+                loadCart();
+            } else {
+                console.error('Fehler beim Hinzufügen zum Warenkorb');
+            }
+        })
+        .catch(err => console.error('Fehler beim Hinzufügen zum Warenkorb:', err));
 }
 
 function openCartModal() {
-    document.getElementById("cartModal").style.display = "block";
-    document.getElementById("modalBackdrop").style.display = "block";
+    document.getElementById('cartModal').style.display = 'block';
+    document.getElementById('modalBackdrop').style.display = 'block';
 }
 
 function closeCartModal() {
-    document.getElementById("cartModal").style.display = "none";
-    document.getElementById("modalBackdrop").style.display = "none";
+    document.getElementById('cartModal').style.display = 'none';
+    document.getElementById('modalBackdrop').style.display = 'none';
 }

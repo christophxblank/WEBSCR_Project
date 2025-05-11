@@ -1,12 +1,14 @@
 package technikum.web_shop.service;
 
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.stream.Collectors;
 import technikum.web_shop.dto.ItemDTO;
 import technikum.web_shop.model.Category;
+import technikum.web_shop.model.Item;
 import technikum.web_shop.repositories.CategoryRepository;
 import technikum.web_shop.repositories.ItemRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
@@ -31,8 +33,22 @@ public class ItemService {
                         i.getName(),
                         i.getImageUrl(),
                         i.getPrice(),
-                        i.getRating()
+                        i.getRating(),
+                        i.getDescription()   // falls dein DTO noch kein Description-Feld hatte
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public ItemDTO findDtoById(Long id) {
+        Item i = itemRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Artikel nicht gefunden: " + id));
+        return new ItemDTO(
+                i.getId(),
+                i.getName(),
+                i.getImageUrl(),
+                i.getPrice(),
+                i.getRating(),
+                i.getDescription()
+        );
     }
 }

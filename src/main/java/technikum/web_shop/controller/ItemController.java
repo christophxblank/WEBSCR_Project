@@ -14,7 +14,7 @@ import java.util.Map;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/items")
 public class ItemController {
 
     @Autowired

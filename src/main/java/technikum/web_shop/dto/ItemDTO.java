@@ -8,8 +8,9 @@ public class ItemDTO {
     private String imageUrl;
     private BigDecimal price;
     private Double rating;
+    private String description;
 
-    public ItemDTO(Long id, String name, String imageUrl, BigDecimal price, Double rating) {
+    public ItemDTO(Long id, String name, String imageUrl, BigDecimal price, Double rating, String description) {
         this.id = id;
         this.name = name;
         this.imageUrl = imageUrl;
@@ -54,5 +55,9 @@ public class ItemDTO {
 
     public void setRating(Double rating) {
         this.rating = rating;
+    }
+
+  public String getDescription() {
+        return description;
     }
 }

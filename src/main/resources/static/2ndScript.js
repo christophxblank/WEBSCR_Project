@@ -1,10 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const navContainer = document.getElementById('navbar-container');
-    if (!navContainer) return;  // Abbruch, wenn keine Navbar eingebunden ist
 
-    // HTML-Import für Navbar-Template
-    includeHTML('navbar-container', 'include/navbar.html')
-        .catch(err => console.error('Navbar-Include fehlgeschlagen', err));
 
     // Session abfragen und Menü anpassen
     fetch('/api/auth/session')
@@ -36,4 +30,4 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .catch(err => console.error('Navbar-Session-Abfrage fehlgeschlagen', err));
-});
+

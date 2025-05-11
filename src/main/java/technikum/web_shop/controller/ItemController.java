@@ -26,8 +26,11 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<Item> getAllItems() {
-        return itemRepository.findAll();
+    public List<ItemDTO> getItems(@RequestParam(required = false) Long categoryId) {
+        if (categoryId != null) {
+            return itemService.getItemsByCategory(categoryId);
+        }
+        return itemService.getAllItems();  // neu: alle Items als DTO
     }
 
     @GetMapping("/{id}")
@@ -81,8 +84,4 @@ public class ItemController {
         return itemService.getAllCategories();
     }
 
-    @GetMapping("/items")
-    public List<ItemDTO> getItems(@RequestParam Long categoryId) {
-        return itemService.getItemsByCategory(categoryId);
-    }
 }

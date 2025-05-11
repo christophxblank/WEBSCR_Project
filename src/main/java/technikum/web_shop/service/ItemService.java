@@ -51,4 +51,17 @@ public class ItemService {
                 i.getDescription()
         );
     }
+public List<ItemDTO> getAllItems() {
+        return itemRepo.findAll().stream()
+                .map(i -> new ItemDTO(
+                        i.getId(),
+                        i.getName(),
+                        i.getImageUrl(),
+                        i.getPrice(),
+                        i.getRating(),
+                        i.getDescription()
+                ))
+                .collect(Collectors.toList());
+    }
+
 }

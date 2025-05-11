@@ -18,15 +18,15 @@
 
     <script src="firstScript.js"></script>
     <script src="2ndScript.js"></script>
+    <script src="Usermanagement.js"></script>
+    <script src="Productmanagement.js"></script>
 
-    <div id="head-container"></div>
-    <div id="navbar-container"></div>
 
 </head>
 <body>
 <nav class="navbar navbar-expand-md bg-body-tertiary justify-content-center">     <!-- //Navbar  -->
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">Webshop</a>
+        <a class="navbar-brand" href="#">Plug&Pay</a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav me-auto mb-2 mb-md-0">
@@ -37,7 +37,7 @@
                     <a id="useroverview" class="nav-link active" aria-current="page" href="../index.html?menu=user">Benutzer</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="../products.html">Produkte</a>
+                    <a class="nav-link active" id="product_overview" aria-current="page" href="#">Produkte</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" id="cart" href="">Warenkorb</a>
@@ -52,10 +52,10 @@
                     <a class="nav-link" href="/admin/vouchers.html">Gutscheine verwalten</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../login.html">Login</a>
+                    <a class="nav-link" id="login_link" href="#">Login</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="../register.html">Registrierung</a>
+                    <a class="nav-link" id="register_link" href="#">Registrierung</a>
                 </li>
                 <li id="nav-logout" class="nav-item d-none">
                     <a class="nav-link" href="#" id="logoutLink">Logout</a>
@@ -69,19 +69,11 @@
 </nav>
 
 
-
-<div class="row">
-    <div class="list-group" id="categories-container">
-        <h2>Categories</h2>
-        <ul id="categoryList"></ul>
-    </div>
-
-<div class="col-9" id="itemsList">
-
+<div class="row" id="main-container">
+    <H1> Welcome to the Plug and Pay Online-Shop</H1>
 
 </div>
 
-</div>
 
 <br>
 <br>

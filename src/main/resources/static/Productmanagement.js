@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById("product_overview").addEventListener('click', () => {
     LoadHTMLmain();
     loadCategories();
-    loadItems();
+
 
 });
 }
@@ -19,7 +19,8 @@ function LoadHTMLmain() {
 <ul id="categoryList"></ul>
 </div>
 </div>
-<div class="col-9" id="itemsList">
+<div class="col-9">
+ <div class="row" id="itemsList"></div>
 </div>`;
 }
 
@@ -69,7 +70,7 @@ function loadItems(categoryId = null) {
             list.innerHTML = '';  // Reset
             data.forEach(item => {
                 list.insertAdjacentHTML('beforeend', `
-          <div class="col-md-4 mb-4">
+          <div class="col-md-3 mb-3">
             <div class="card h-100">
               <img src="${item.image_url}"
                    class="card-img-top fixed-img"

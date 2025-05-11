@@ -16,6 +16,11 @@ public class ItemDTO {
         this.imageUrl = imageUrl;
         this.price = price;
         this.rating = rating;
+        this.description = description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Long getId() {

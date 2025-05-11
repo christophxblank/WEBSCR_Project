@@ -26,7 +26,7 @@ function loadCart() {
                 html = '<p>Dein Warenkorb ist leer.</p>';
             } else {
                 cart.forEach(item => {
-                    html += `<p><strong>${item.name}</strong> - ${item.price} €</p>`;
+                    html += `<p><strong>${item.name}</strong> - ${item.price.toFixed(2)} €</p>`;
                     sum+=item.price;
                 });
             }

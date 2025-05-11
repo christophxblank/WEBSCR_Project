@@ -1,33 +1,69 @@
+// 2ndScript.js
+// Dynamische Navbar-Anpassung basierend auf Session-Status
 
+document.addEventListener('DOMContentLoaded', async () => {
+    // Standard: nicht authentifiziert
+    let session = { authenticated: false, role: null };
+    try {
+        const resp = await fetch('/api/auth/session');
+        if (resp.ok) {
+            session = await resp.json();
+        }
+    } catch (err) {
+        console.error('Session-Abfrage fehlgeschlagen, setze als Gast', err);
+    }
 
-    // Session abfragen und Menü anpassen
-    fetch('/api/auth/session')
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
-        .then(session => {
-            // Gäste-Links
-            if (!session.authenticated) {
-                ['nav-login', 'nav-register'].forEach(id => document.getElementById(id)?.classList.remove('d-none'));
-                return;
+    // Navigationselemente referenzieren
+    const loginLi      = document.getElementById('login_link')?.closest('li');
+    const registerLi   = document.getElementById('register_link')?.closest('li');
+    const logoutLi     = document.getElementById('nav-logout');
+    const cartLi       = document.getElementById('cart')?.closest('li');
+    const accountLi    = document.getElementById('nav-account');
+    const adminProducts  = document.getElementById('nav-admin-products');
+    const adminCustomers = document.getElementById('nav-admin-customers');
+    const adminVouchers  = document.getElementById('nav-admin-vouchers');
+
+    if (!session.authenticated) {
+        // Gast: Login/Register zeigen, Logout/Warenkorb/Konto/Admin ausblenden
+        loginLi?.classList.remove('d-none');
+        registerLi?.classList.remove('d-none');
+        logoutLi?.classList.add('d-none');
+        cartLi?.classList.add('d-none');
+        accountLi?.classList.add('d-none');
+        adminProducts?.classList.add('d-none');
+        adminCustomers?.classList.add('d-none');
+        adminVouchers?.classList.add('d-none');
+    } else {
+        // Eingeloggt: Login/Register ausblenden, Logout/Warenkorb zeigen
+        loginLi?.classList.add('d-none');
+        registerLi?.classList.add('d-none');
+        logoutLi?.classList.remove('d-none');
+        cartLi?.classList.remove('d-none');
+
+        // Konto oder Admin-Links je nach Rolle
+        if (session.role === 'customer') {
+            accountLi?.classList.remove('d-none');
+            adminProducts?.classList.add('d-none');
+            adminCustomers?.classList.add('d-none');
+            adminVouchers?.classList.add('d-none');
+        } else if (session.role === 'admin') {
+            accountLi?.classList.add('d-none');
+            adminProducts?.classList.remove('d-none');
+            adminCustomers?.classList.remove('d-none');
+            adminVouchers?.classList.remove('d-none');
+        }
+
+        // Logout-Handler: HTTP-Session invalidieren und Seite neu laden
+        const logoutLink = document.getElementById('logoutLink');
+        logoutLink?.addEventListener('click', async e => {
+            e.preventDefault();
+            try {
+                await fetch('/logout', { method: 'POST' });
+            } catch (err) {
+                console.error('Logout fehlgeschlagen', err);
             }
-            // Eingeloggt
-            ['nav-login', 'nav-register'].forEach(id => document.getElementById(id)?.classList.add('d-none'));
-            document.getElementById('nav-logout')?.classList.remove('d-none');
-            document.getElementById('nav-cart')?.classList.remove('d-none');
-
-            if (session.role === 'customer') {
-                document.getElementById('nav-account')?.classList.remove('d-none');
-            }
-            if (session.role === 'admin') {
-                ['nav-admin-products','nav-admin-customers','nav-admin-vouchers']
-                    .forEach(id => document.getElementById(id)?.classList.remove('d-none'));
-            }
-
-            // Logout-Handler
-            document.getElementById('logoutLink')?.addEventListener('click', async e => {
-                e.preventDefault();
-                await fetch('/api/auth/logout', { method: 'POST' });
-                window.location.href = '/index.html';
-            });
-        })
-        .catch(err => console.error('Navbar-Session-Abfrage fehlgeschlagen', err));
-
+            // Seite neu laden, um Navbar zu aktualisieren
+            window.location.reload();
+        });
+    }
+});

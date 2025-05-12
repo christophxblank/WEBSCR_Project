@@ -23,6 +23,7 @@ function loadCart() {
             console.log('--- CartItems vom Server:', cartItems);
             let html = '';
             let sum=0;
+            let ItemSum=0;
             if (cartItems.length === 0) {
                 html = '<p>Dein Warenkorb ist leer.</p>';
             } else {
@@ -32,10 +33,12 @@ function loadCart() {
                             Anzahl: ${ci.quantity}   <button type="button" id="DeleteButton.${ci.item.id}" class="btn btn-danger" onclick="deleteFromCart(${ci.item.id})">x</button></p> 
                               </div>`;
                     sum+=ci.item.price*ci.quantity;
+                    ItemSum+=ci.quantity;
                 });
             }
             document.getElementById('cartContent').innerHTML = html;
             document.getElementById('cartSum').innerHTML = sum;
+            document.getElementById('cartItemSum').innerHTML = ItemSum;
             openCartModal();
         })
         .catch(err => console.error('Fehler beim Laden des Warenkorbs:', err));

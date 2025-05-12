@@ -30,7 +30,9 @@ function loadCart() {
                 cartItems.forEach(ci => {
                     html += `
                               <div class="cart-item"<p><strong>${ci.item.name}</strong> - ${ci.item.price.toFixed(2)} € 
-                            Anzahl: ${ci.quantity}   <button type="button" id="DeleteButton.${ci.item.id}" class="btn btn-danger" onclick="deleteFromCart(${ci.item.id})">x</button></p> 
+                            Anzahl: ${ci.quantity}   
+                            <button type="button" id="AddButton.${ci.item.id}" class="btn btn-primary" onclick="addToCart(${ci.item.id})">+</button>
+                            <button type="button" id="DeleteButton.${ci.item.id}" class="btn btn-danger" onclick="deleteFromCart(${ci.item.id})">x</button></p> 
                               </div>`;
                     sum+=ci.item.price*ci.quantity;
                     ItemSum+=ci.quantity;

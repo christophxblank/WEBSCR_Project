@@ -84,4 +84,9 @@ public class ItemController {
         return itemService.getAllCategories();
     }
 
+    @GetMapping("/search")
+    public List<ItemDTO> search(@RequestParam("q") String query) {
+        return itemService.searchItems(query);
+    }
+
 }

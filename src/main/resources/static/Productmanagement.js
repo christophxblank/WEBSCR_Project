@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
+
 });
 
  function LoadItemPage(){
@@ -98,3 +99,116 @@ function loadItems(categoryId = null) {
 
 
 
+document.addEventListener('DOMContentLoaded', () => {
+    const input  = document.getElementById('searchItem');
+    const suggs  = document.getElementById('searchSuggestions');
+
+    // Debounce-Hilfsfunktion zum Warten auf Eingaben
+    function debounce(fn, delay = 300) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), delay);
+        };
+    }
+
+    // Vorschläge holen und anzeigen
+    async function fetchSuggestions(term) {
+        if (!term) {
+            suggs.style.display = 'none';
+            return;
+        }
+        try {
+            const res   = await fetch(`/items/search?q=${encodeURIComponent(term)}`);
+            const items = await res.json();
+            renderSuggestions(items);
+        } catch (e) {
+            console.error('Suche fehlgeschlagen', e);
+        }
+    }
+
+    // Vorschlags-Dropdown befüllen
+    function renderSuggestions(items) {
+        if (!items.length) {
+            suggs.style.display = 'none';
+            return;
+        }
+        suggs.innerHTML = items
+            .map(
+                item => `
+      <button 
+        type="button" 
+        class="list-group-item list-group-item-action"
+        data-id="${item.id}"
+      >
+        ${item.name}
+      </button>`
+            )
+            .join('');
+        suggs.style.display = 'block';
+    }
+
+    // Klick auf Vorschlag: in Suchfeld kopieren & Liste schließen
+    suggs.addEventListener('click', e => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        const name = btn.textContent;
+        const id   = btn.dataset.id;
+        input.value = name;
+        suggs.style.display = 'none';
+
+        LoadHTMLmain();
+        loadCategories();
+        loadSearchItem(id); // Artikel laden
+
+    });
+
+    // Wenn Input den Fokus verliert, Dropdown schließen
+    input.addEventListener('blur', () => {
+        setTimeout(() => (suggs.style.display = 'none'), 150);
+    });
+
+    // Auf jeden Tastendruck, debounced, Vorschläge holen
+    input.addEventListener(
+        'input',
+        debounce(e => fetchSuggestions(e.target.value))
+    );
+});
+
+
+ function loadSearchItem(id){
+
+     fetch(`/items/${id}`)
+             .then(res => {
+                 if (!res.ok) throw new Error('Netzwerk-Fehler beim Laden der Items');
+                 return res.json();
+             })
+             .then(item => {
+                 const list = document.getElementById('itemsList');
+
+                 list.innerHTML=`
+          <div class="col-md-3 mb-3">
+            <div class="card h-100">
+              <img src="${item.image_url}"
+                   class="card-img-top fixed-img"
+                   alt="${item.name}">
+              <div class="card-body">
+                <h5 class="card-title">${item.name}</h5>
+                <p class="card-text">${item.description}</p>
+                 <p class="card-text">Bewertung: ${item.rating}</p>
+                <p class="card-text" style="margin-top: auto">${item.price} €</p>    
+                <button class="btn btn-primary" style="margin-top: auto"  onclick="addToCart(${item.id})">
+                  In den Warenkorb
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+             })
+    .catch(err => {
+        console.error(err);
+        document.getElementById('itemsList').innerHTML =
+            '<p>Fehler beim Laden der Artikel.</p>';
+    });
+ }

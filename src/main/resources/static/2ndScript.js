@@ -1,4 +1,3 @@
-// 2ndScript.js
 // Dynamische Navbar-Anpassung basierend auf Session-Status
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -67,3 +66,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 });
+
+

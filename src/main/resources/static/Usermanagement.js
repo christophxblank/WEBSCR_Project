@@ -225,6 +225,7 @@ function submitRegisterForm() {
     });
 }
 
+
 // Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
     LoadLoginForm();

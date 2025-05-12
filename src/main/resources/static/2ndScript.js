@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         adminCustomers?.classList.add('d-none');
         adminVouchers?.classList.add('d-none');
     } else {
-        // Eingeloggt: Login/Register ausblenden, Logout/Warenkorb zeigen
+        // Eingeloggt: Login/Register ausblenden, Logout zeigen
         loginLi?.classList.add('d-none');
         registerLi?.classList.add('d-none');
         logoutLi?.classList.remove('d-none');

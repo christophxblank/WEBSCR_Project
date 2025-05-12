@@ -3,6 +3,7 @@ package technikum.web_shop.dto;
 public class SessionResponse {
     private boolean authenticated;
     private String role;
+
     public SessionResponse() {}
     public SessionResponse(boolean authenticated, String role) {
         this.authenticated = authenticated;

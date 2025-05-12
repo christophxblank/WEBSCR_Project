@@ -3,6 +3,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/cart/session');    // Session initialisieren
     setupCart();
+    document.getElementById("OrderButton").addEventListener("click", function() {
+        viewOrder();
+    });
 });
 
 
@@ -71,6 +74,35 @@ function deleteFromCart(id) {
         .catch(err => console.error('Fehler beim Löschen aus dem Warenkorb:', err));
 }
 
+
+async function viewOrder() {
+    const { authenticated, role } = await checkAuth();
+    if (!authenticated) {
+        alert('Bitte melde dich zuerst an, um eine Bestellung aufzugeben.');
+        return;
+    }
+    else alert("Bestellung erfolgreich aufgegeben");
+
+    //// Hier könnte der Code für die Bestellung stehen
+
+}
+
+
+
+
+async function checkAuth() {
+    try {
+        const res = await fetch('/api/auth/session', {
+            credentials: 'include'   // schickt JSESSIONID-Cookie mit
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { authenticated, role } = await res.json();
+        return { authenticated, role };
+    } catch (e) {
+        console.error('Fehler beim Prüfen der Session:', e);
+        return { authenticated: false, role: null };
+    }
+}
 
 
 function openCartModal() {

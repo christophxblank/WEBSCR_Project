@@ -1,7 +1,7 @@
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('/session');    // Session initialisieren
+    fetch('/cart/session');    // Session initialisieren
     setupCart();
 });
 
@@ -19,15 +19,19 @@ function setupCart() {
 function loadCart() {
     fetch('/cart')
         .then(res => res.json())
-        .then(cart => {
+        .then(cartItems => {
+            console.log('--- CartItems vom Server:', cartItems);
             let html = '';
             let sum=0;
-            if (cart.length === 0) {
+            if (cartItems.length === 0) {
                 html = '<p>Dein Warenkorb ist leer.</p>';
             } else {
-                cart.forEach(item => {
-                    html += `<p><strong>${item.name}</strong> - ${item.price.toFixed(2)} €</p>`;
-                    sum+=item.price;
+                cartItems.forEach(ci => {
+                    html += `
+                              <div class="cart-item"<p><strong>${ci.item.name}</strong> - ${ci.item.price.toFixed(2)} € 
+                            Anzahl: ${ci.quantity}   <button type="button" id="DeleteButton.${ci.item.id}" class="btn btn-danger" onclick="deleteFromCart(${ci.item.id})">x</button></p> 
+                              </div>`;
+                    sum+=ci.item.price*ci.quantity;
                 });
             }
             document.getElementById('cartContent').innerHTML = html;
@@ -49,6 +53,20 @@ function addToCart(id) {
         })
         .catch(err => console.error('Fehler beim Hinzufügen zum Warenkorb:', err));
 }
+
+function deleteFromCart(id) {
+    fetch(`/cart/delete/${id}`, { method: 'POST' })
+        .then(res => {
+            if (res.ok) {
+                loadCart();
+            } else {
+                console.error('Fehler beim Löschen aus dem Warenkorb');
+            }
+        })
+        .catch(err => console.error('Fehler beim Löschen aus dem Warenkorb:', err));
+}
+
+
 
 function openCartModal() {
     document.getElementById('cartModal').style.display = 'block';

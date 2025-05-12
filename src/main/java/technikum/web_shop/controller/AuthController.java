@@ -65,10 +65,16 @@ public class AuthController {
     /** Liefert zurück: { authenticated: boolean, role: "guest"|"customer"|"admin" } */
     @GetMapping("/session")
     public ResponseEntity<SessionResponse> session(HttpSession session) {
-        boolean auth = session.getAttribute("userId") != null;
-        String role = auth
+        // 1) hol das Attribut als Number
+        Number idNum = (Number) session.getAttribute("userId");
+        // 2) konvertiere (null-safe) in Long
+        Long userId = (idNum != null) ? idNum.longValue() : null;
+
+        boolean authenticated = (userId != null);
+        String role = authenticated
                 ? session.getAttribute("userRole").toString()
                 : "guest";
-        return ResponseEntity.ok(new SessionResponse(auth, role));
+
+        return ResponseEntity.ok(new SessionResponse(authenticated, role, userId));
     }
 }

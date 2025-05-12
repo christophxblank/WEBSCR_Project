@@ -76,17 +76,21 @@ function deleteFromCart(id) {
 
 
 async function viewOrder() {
-    const { authenticated, role } = await checkAuth();
+    const { authenticated,userId } = await checkAuth();
     if (!authenticated) {
         alert('Bitte melde dich zuerst an, um eine Bestellung aufzugeben.');
         return;
     }
-    else{ loadOrder();
-    closeCartModal();
+    fetch("api/auth/session")
+    .then(res => res.json())
+    .then(data => {
+       let userId = data.user_id;
+        loadOrder();
+        closeCartModal();
+        viewUserdetails(userId);
+        console.log(data);
     }
-
-    //// Hier könnte der Code für die Bestellung stehen
-
+    );
 }
 
 async function checkAuth() {
@@ -95,11 +99,11 @@ async function checkAuth() {
             credentials: 'include'   // schickt JSESSIONID-Cookie mit
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { authenticated, role } = await res.json();
-        return { authenticated, role };
+        const { authenticated, role, userId } = await res.json();
+        return { authenticated, role, userId };
     } catch (e) {
         console.error('Fehler beim Prüfen der Session:', e);
-        return { authenticated: false, role: null };
+        return { authenticated: false, role: null, userId: null };
     }
 }
 
@@ -116,8 +120,8 @@ function loadOrder() {   //very similar to loadCart()
                 html = '<p>Deine Bestellung ist leer.</p>';
             } else {
                 cartItems.forEach(ci => {
-                    html += ` <div class="container">
-                               <table class="table table-striped">
+                    html += ` <div class="container col-8">
+                               <table class="table table-striped centered-table">
                                <thead><tr>
                                <th>Name</th>
                                <th>Preis</th>
@@ -134,12 +138,37 @@ function loadOrder() {   //very similar to loadCart()
                     sum+=ci.item.price*ci.quantity;
                 });
             }
-            html+= `<p>Gesamt: ${sum.toFixed(2)} €</p>`;
+            html+= `<div class="container col-8">Gesamt: ${sum.toFixed(2)} €</div><br><br>
+`;
             document.getElementById('main-container').innerHTML = html;
         })
         .catch(err => console.error('Fehler beim Laden der Bestellung:', err));
 
 }
+
+function viewUserdetails(userId){
+
+    fetch(`/users/${userId}`, {
+        credentials: 'include'    // sendet das JSESSIONID-Cookie mit
+    })
+    .then(res => res.json())
+    .then(user => {
+
+        let container = document.getElementById('user-container');
+        container.innerHTML += `
+          <div class="user-card">
+            <h2>${user.first_name} ${user.last_name}</h2>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Rolle:</strong> ${user.role}</p>
+            <p><strong>Adresse:</strong> ${user.address.street}</p>
+            <p><strong>Telefon:</strong> ${user.phone}</p>
+            <p><strong>Zahlungsart:</strong> ${user.payment_method.name}</p>
+          </div>`;
+        });
+
+    }
+
+
 
 
 function openCartModal() {

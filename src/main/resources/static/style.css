@@ -22,3 +22,9 @@
     background-color: #f8f9fa;
 }
 
+.centered-table {
+    width: auto;
+    margin: 0 auto;
+    table-layout: auto;
+}
+

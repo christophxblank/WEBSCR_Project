@@ -64,4 +64,18 @@ public List<ItemDTO> getAllItems() {
                 .collect(Collectors.toList());
     }
 
+    public List<ItemDTO> searchItems(String term) {
+        return itemRepo.findByNameContainingIgnoreCase(term).stream()
+                .map(i -> new ItemDTO(
+                        i.getId(),
+                        i.getName(),
+                        i.getImageUrl(),
+                        i.getPrice(),
+                        i.getRating(),
+                        i.getDescription()
+                ))
+                .collect(Collectors.toList());
+    }
+
+
 }

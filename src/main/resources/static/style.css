@@ -15,3 +15,10 @@
     display: flex;
     flex-direction: column;
 }
+#searchSuggestions .list-group-item {
+    cursor: pointer;
+}
+#searchSuggestions .list-group-item:hover {
+    background-color: #f8f9fa;
+}
+

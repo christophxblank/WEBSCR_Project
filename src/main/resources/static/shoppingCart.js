@@ -81,14 +81,13 @@ async function viewOrder() {
         alert('Bitte melde dich zuerst an, um eine Bestellung aufzugeben.');
         return;
     }
-    else alert("Bestellung erfolgreich aufgegeben");
+    else{ loadOrder();
+    closeCartModal();
+    }
 
     //// Hier könnte der Code für die Bestellung stehen
 
 }
-
-
-
 
 async function checkAuth() {
     try {
@@ -102,6 +101,44 @@ async function checkAuth() {
         console.error('Fehler beim Prüfen der Session:', e);
         return { authenticated: false, role: null };
     }
+}
+
+
+function loadOrder() {   //very similar to loadCart()
+    fetch('/cart')
+        .then(res => res.json())
+        .then(cartItems => {
+            console.log('Bestellitems', cartItems);
+            let html = '';
+            let sum=0;
+            let ItemSum=0;
+            if (cartItems.length === 0) {
+                html = '<p>Deine Bestellung ist leer.</p>';
+            } else {
+                cartItems.forEach(ci => {
+                    html += ` <div class="container">
+                               <table class="table table-striped">
+                               <thead><tr>
+                               <th>Name</th>
+                               <th>Preis</th>
+                               <th>Anzahl
+                               <th>Summe</th>
+                               </tr></thead>
+                               <tbody> <tr>
+                               <td>${ci.item.name}</td>
+                               <td>${ci.item.price.toFixed(2)} €</td>
+                               <td>${ci.quantity}</td>
+                               <td>${(ci.item.price*ci.quantity).toFixed(2)} €</td>
+                               </tr> </tbody></table></div>
+                              `;
+                    sum+=ci.item.price*ci.quantity;
+                });
+            }
+            html+= `<p>Gesamt: ${sum.toFixed(2)} €</p>`;
+            document.getElementById('main-container').innerHTML = html;
+        })
+        .catch(err => console.error('Fehler beim Laden der Bestellung:', err));
+
 }
 
 

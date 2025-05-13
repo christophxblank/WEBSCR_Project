@@ -322,8 +322,16 @@ function EditDetails() {
 
         td.innerHTML = '';              // alten Inhalt leeren
         td.appendChild(input);          // neues <input> setzen
+    })
+    document.getElementById('main-container').innerHTML+= `<button type="submit" class="btn btn-primary" id="saveUserDetails">Änderungen speichern</button>`;
+    document.getElementById('saveUserDetails').addEventListener('click', function() {
+        saveUserDetails();
     });
 }
+
+function saveUserDetails() {
+
+    ...}
 
 
 

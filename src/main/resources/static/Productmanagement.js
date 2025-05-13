@@ -13,6 +13,7 @@ document.getElementById("product_overview").addEventListener('click', () => {
 }
 
 function LoadHTMLmain() {
+     document.getElementById("user-container").innerHTML = "";
     document.getElementById("main-container").innerHTML = `
 <div class="col-2" >
     <div class="list-group" id="categories-container">
@@ -212,3 +213,24 @@ document.addEventListener('DOMContentLoaded', () => {
             '<p>Fehler beim Laden der Artikel.</p>';
     });
  }
+
+
+ function createProduct(){
+     document.getElementById('createProductForm').addEventListener('submit', function(e) {
+         e.preventDefault();
+         const formData = new FormData(this);
+         fetch('/items/create', {
+             method: 'POST',
+             body: formData
+         })
+
+            .then(response => {
+                if (response.ok) {
+                    alert('Produkt erfolgreich erstellt!');
+                    this.reset(); // Reset the form
+                } else {
+                    alert('Fehler beim Erstellen des Produkts.');
+                }
+            })
+            .catch(error => console.error('Fehler:', error));
+        }   );}

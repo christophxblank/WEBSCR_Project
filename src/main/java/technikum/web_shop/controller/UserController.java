@@ -25,13 +25,13 @@ public class UserController {
 
     @GetMapping("/{id}")
     public User getUserById(@PathVariable int id) {
-        return userRepository.findById((long) id).orElse(null);
+        return userRepository.findById(id).orElse(null);
     }
 
 
     @PatchMapping("/{id}")
     public User patchUser(@PathVariable int id, @RequestBody Map<String, Object> updates) {
-        User user = userRepository.findById((long) id).orElse(null);
+        User user = userRepository.findById(id).orElse(null);
         if (user == null) return null;
 
         updates.forEach((key, value) -> {
@@ -68,7 +68,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable int id) {
-        userRepository.deleteById((long) id);
+        userRepository.deleteById( id);
     }
 
 

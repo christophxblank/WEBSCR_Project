@@ -1,14 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
-
 });
 
  function LoadItemPage(){
 document.getElementById("product_overview").addEventListener('click', () => {
     LoadHTMLmain();
     loadCategories();
-
-
 });
 }
 

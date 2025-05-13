@@ -8,6 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+async function checkAuth() {
+    try {
+        const res = await fetch('/api/auth/session', {
+            credentials: 'include'   // schickt JSESSIONID-Cookie mit
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const { authenticated, role, userId } = await res.json();
+        return { authenticated, role, userId };
+    } catch (e) {
+        console.error('Fehler beim Prüfen der Session:', e);
+        return { authenticated: false, role: null, userId: null };
+    }
+}
 
 
 function setupCart() {
@@ -94,18 +107,29 @@ async function viewOrder() {
     );
 }
 
-async function checkAuth() {
-    try {
-        const res = await fetch('/api/auth/session', {
-            credentials: 'include'   // schickt JSESSIONID-Cookie mit
+function viewUserdetails(userId){
+    document.getElementById('user-container').innerHTML = "";
+
+    fetch(`/users/${userId}`, {
+        credentials: 'include'    // sendet das JSESSIONID-Cookie mit
+    })
+        .then(res => res.json())
+        .then(user => {
+
+            let container = document.getElementById('user-container');
+            container.innerHTML += `
+          <div class=" container col-4 ordercontainer"><br>
+            <h5>Name: ${user.first_name} ${user.last_name}</h5>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <br>
+            <p><strong>Lieferadresse:</strong></p>
+            <p><strong>Straße:</strong> ${user.address.street}</p>
+            <p><strong>PLZ:</strong> ${user.address.plz}</p>
+            <p><strong>Land:</strong> ${user.address.country}</p>
+            <p><strong>Zahlungsart:</strong> ${user.payment_method.name}</p>
+            </div>`;
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const { authenticated, role, userId } = await res.json();
-        return { authenticated, role, userId };
-    } catch (e) {
-        console.error('Fehler beim Prüfen der Session:', e);
-        return { authenticated: false, role: null, userId: null };
-    }
+
 }
 
 
@@ -176,33 +200,6 @@ function loadOrder() {   //very similar to loadCart()
         .catch(err => console.error('Fehler beim Laden der Bestellung:', err));
 
 }
-
-function viewUserdetails(userId){
-    document.getElementById('user-container').innerHTML = "";
-
-    fetch(`/users/${userId}`, {
-        credentials: 'include'    // sendet das JSESSIONID-Cookie mit
-    })
-    .then(res => res.json())
-    .then(user => {
-
-        let container = document.getElementById('user-container');
-        container.innerHTML += `
-          <div class=" container col-4 ordercontainer"><br>
-            <h5>Name: ${user.first_name} ${user.last_name}</h5>
-            <p><strong>Email:</strong> ${user.email}</p>
-            <br>
-            <p><strong>Lieferadresse:</strong></p>
-            <p><strong>Straße:</strong> ${user.address.street}</p>
-            <p><strong>PLZ:</strong> ${user.address.plz}</p>
-            <p><strong>Land:</strong> ${user.address.country}</p>
-            <p><strong>Zahlungsart:</strong> ${user.payment_method.name}</p>
-            </div>`;
-        });
-
-    }
-
-
 
 
 function openCartModal() {

@@ -1,6 +1,7 @@
+
 document.addEventListener('DOMContentLoaded', () => {
    document.getElementById('useroverview').addEventListener('click', () => {
-        document.getElementById("main-container").innerHTML = "";
+       viewUser();
     });
 });
 
@@ -230,8 +231,114 @@ function submitRegisterForm() {
 }
 
 
+async function viewUser() {
+    const { authenticated,userId } = await checkAuth();
+    if (!authenticated) {
+        alert('Bitte melde dich zuerst an, um eine Bestellung aufzugeben.');
+        return;
+    }
+    fetch("api/auth/session")
+        .then(res => res.json())
+        .then(data => {
+                let userId = data.user_id;
+            loadUser(userId);
+                console.log(data);
+            }
+        );
+}
+
+
+function loadUser(userId){   //eventuell redundnat zu viewUserdetails in shoppingcart.js
+    fetch(`/users/${userId}`)
+
+    .then(res => res.json())
+    .then(user => {
+        console.log(user);
+        let HTMLCode="";
+     HTMLCode +=`<div class="container col-6">
+            <h1>Meine Daten</h1>
+            <table class="table">
+                <tbody>
+                    <tr >
+                        <th scope="firstname">Vorname</th>
+                        <td class="editable" id="first_name">${user.first_name}</td>
+                    </tr>
+                    <tr>
+                        <th scope="lastname">Nachname</th>
+                        <td class="editable" id="last_name">${user.last_name}</td>
+                    </tr>
+                     <tr>
+                        <th scope="email">Email Adresse</th>
+                        <td class="editable" id="user_email">${user.email}</td>
+                    </tr>
+                     <tr>
+                        <th scope="adress"> Adresse</th>
+                        <td class="editable" id="adress">${user.address.street}, ${user.address.plz} ${user.address.city}, ${user.address.country}</td>
+                    </tr>
+                     <tr>
+                        <th scope="pyment_method">Zahlungsmethode</th>
+                        <td class="editable" id="payment_method">${user.payment_method.name}</td>
+                    </tr>
+                </tbody>
+                <br />
+            </table>
+            <button type="button" class="btn btn-primary" id="changeUserDetails">Stammdaten bearbeiten</button>
+            <br/>
+             <br/>
+             
+            <form>
+            <h4>Passwort ändern:</h4>
+            <form>
+                <label for="old_password">Altes Passwort:</label>
+                <input type="password" class="form-control" id="old_password" name="old_password" required>
+
+                <label >Neues Passwort:</label>
+                <input type="password" class="form-control" id="new_password" name="new_password" required>
+
+                <label for="confirm_password">Neues Passwort bestätigen:</label>
+                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                <br />
+                <button type="submit" class="btn btn-primary">Passwort ändern</button>
+            </form>`
+        document.getElementById('main-container').innerHTML = HTMLCode;
+      // document.getElementById('UserContent').innerHTML = "";
+    document.getElementById("changeUserDetails").addEventListener('click', function() {
+        EditDetails();
+    })
+}) }
+
+
+
+function EditDetails() {
+    document.querySelectorAll('td.editable').forEach(td => {
+        const text = td.textContent.trim();
+        const input = document.createElement('input');
+
+        input.type  = 'text';
+        input.id    = td.id;            // gleiche ID weiterverwenden
+        input.name  = td.id;            // für Form-Serialisierung
+        input.value = text;
+        input.className = 'form-control';
+
+        td.innerHTML = '';              // alten Inhalt leeren
+        td.appendChild(input);          // neues <input> setzen
+    });
+}
+
+
+
 // Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
     LoadLoginForm();
     LoadRegisterForm();
 });
+
+function openUserModal() {
+    document.getElementById('UserModal').style.display = 'block';
+    document.getElementById('UsermodalBackdrop').style.display = 'block';
+}
+
+function closeUserModal() {
+    document.getElementById('UserModal').style.display ='none';
+    document.getElementById('UsermodalBackdrop').style.display = 'none';
+}

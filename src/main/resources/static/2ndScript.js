@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loginLi      = document.getElementById('login_link')?.closest('li');
     const registerLi   = document.getElementById('register_link')?.closest('li');
     const logoutLi     = document.getElementById('nav-logout');
-    const cartLi       = document.getElementById('cart')?.closest('li');
-    const accountLi    = document.getElementById('nav-account');
+    const accountLi    = document.getElementById('useroverview');
     const adminProducts  = document.getElementById('nav-admin-products');
     const adminCustomers = document.getElementById('nav-admin-customers');
     const adminVouchers  = document.getElementById('nav-admin-vouchers');
@@ -46,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             adminCustomers?.classList.add('d-none');
             adminVouchers?.classList.add('d-none');
         } else if (session.role === 'admin') {
-            accountLi?.classList.add('d-none');
+
             adminProducts?.classList.remove('d-none');
             adminCustomers?.classList.remove('d-none');
             adminVouchers?.classList.remove('d-none');

@@ -38,7 +38,7 @@ public class ItemController {
         return itemRepository.findById(id).orElse(null);
     }
 
-    @PostMapping
+    @PostMapping("/create")
     public Item createItem(@RequestBody Item item) {
         return itemRepository.save(item);
     }

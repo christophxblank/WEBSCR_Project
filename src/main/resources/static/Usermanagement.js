@@ -1,4 +1,8 @@
-// Usermanagement.js
+document.addEventListener('DOMContentLoaded', () => {
+   document.getElementById('useroverview').addEventListener('click', () => {
+        document.getElementById("main-container").innerHTML = "";
+    });
+});
 
 const LOGIN_URL     = '/api/auth/login';
 const REGISTER_URL  = '/api/auth/register';

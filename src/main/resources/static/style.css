@@ -28,3 +28,8 @@
     table-layout: auto;
 }
 
+.ordercontainer{
+    background-color: lightsalmon;
+    border-radius: 10px;
+    padding: 20px;
+}

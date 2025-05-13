@@ -42,7 +42,7 @@ function loadCart() {
                 });
             }
             document.getElementById('cartContent').innerHTML = html;
-            document.getElementById('cartSum').innerHTML = sum;
+            document.getElementById('cartSum').innerHTML = (sum).toFixed(2);
             document.getElementById('cartItemSum').innerHTML = ItemSum;
             openCartModal();
         })
@@ -85,9 +85,10 @@ async function viewOrder() {
     .then(res => res.json())
     .then(data => {
        let userId = data.user_id;
+       viewUserdetails(userId);
         loadOrder();
         closeCartModal();
-        viewUserdetails(userId);
+
         console.log(data);
     }
     );
@@ -119,8 +120,9 @@ function loadOrder() {   //very similar to loadCart()
             if (cartItems.length === 0) {
                 html = '<p>Deine Bestellung ist leer.</p>';
             } else {
+                html += ` <div class="container col-8 ordercontainer" ><h1>Ihre Bestellung:</h1>`;
                 cartItems.forEach(ci => {
-                    html += ` <div class="container col-8">
+                    html += `
                                <table class="table table-striped centered-table">
                                <thead><tr>
                                <th>Name</th>
@@ -133,20 +135,50 @@ function loadOrder() {   //very similar to loadCart()
                                <td>${ci.item.price.toFixed(2)} €</td>
                                <td>${ci.quantity}</td>
                                <td>${(ci.item.price*ci.quantity).toFixed(2)} €</td>
-                               </tr> </tbody></table></div>
+                               </tr> </tbody></table>
                               `;
                     sum+=ci.item.price*ci.quantity;
                 });
+                html+= `<h5><strong>Gesamt: ${sum.toFixed(2)} €</h5></strong>
+                        <button type="button" class="btn btn-primary" id="ConfirmOrder">Jetzt bestellen</button>
+          </div><br><br>`;
             }
-            html+= `<div class="container col-8">Gesamt: ${sum.toFixed(2)} €</div><br><br>
-`;
             document.getElementById('main-container').innerHTML = html;
+            document.getElementById('ConfirmOrder').addEventListener('click', function() {
+                alert("Vielen Dank für Ihre Bestellung, Sie werden zum externen Zahlungssystem weitergeleitet.");
+
+                window.open("https://www.paypal.com/de/signin");
+
+                // Zahlungslogik mit Externen Anbietern
+
+
+                fetch("/orders",
+                    {
+                        method: "POST",
+                        credentials: 'include',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(cartItems)
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                        return res.json();
+                    })
+                .then(order => {
+                        console.log(order);
+                    })
+                    .catch(err => console.error('Fehler beim Speichern der Bestellung:', err));
+                document.getElementById('cartItemSum').innerHTML = "0";
+                document.getElementById('useroverview').click();
+            });
         })
         .catch(err => console.error('Fehler beim Laden der Bestellung:', err));
 
 }
 
 function viewUserdetails(userId){
+    document.getElementById('user-container').innerHTML = "";
 
     fetch(`/users/${userId}`, {
         credentials: 'include'    // sendet das JSESSIONID-Cookie mit
@@ -156,14 +188,16 @@ function viewUserdetails(userId){
 
         let container = document.getElementById('user-container');
         container.innerHTML += `
-          <div class="user-card">
-            <h2>${user.first_name} ${user.last_name}</h2>
+          <div class=" container col-4 ordercontainer"><br>
+            <h5>Name: ${user.first_name} ${user.last_name}</h5>
             <p><strong>Email:</strong> ${user.email}</p>
-            <p><strong>Rolle:</strong> ${user.role}</p>
-            <p><strong>Adresse:</strong> ${user.address.street}</p>
-            <p><strong>Telefon:</strong> ${user.phone}</p>
+            <br>
+            <p><strong>Lieferadresse:</strong></p>
+            <p><strong>Straße:</strong> ${user.address.street}</p>
+            <p><strong>PLZ:</strong> ${user.address.plz}</p>
+            <p><strong>Land:</strong> ${user.address.country}</p>
             <p><strong>Zahlungsart:</strong> ${user.payment_method.name}</p>
-          </div>`;
+            </div>`;
         });
 
     }

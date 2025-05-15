@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
 
     document.getElementById('nav-admin-products').addEventListener('click', function() {
+        document.getElementById('orders-container').innerHTML = '';
         loadProductCreationForm();
     });
 });
@@ -325,47 +326,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
  function loadProductCreationForm() {
-     let html = `<div class="container col-6"><h1> Produkt hinzufügen</h1>
+     document.getElementById('main-container').innerHTML = `<div class="container col-6"><h1> Produkt hinzufügen</h1>
 
-            <form  method="post" enctype="multipart/form-data">
+            <form enctype="multipart/form-data" id="createProductForm">
                 <label for="product_name"> Produktname</label>
-                <input class="form-control" id="product_name" type="text" name="product_name_form" required placeholder="Produktname eingeben" />
+                <input class="form-control" id="product_name" type="text" name="name" required placeholder="Produktname eingeben" />
                 <br />
 
                 <label for="descritpion"> Produktbeschreibung</label>
                 <br />
-                <textarea required class="form-control" name="descritption_form" required id="descritpion"
+                <input required class="form-control" name="description" required id="descritpion"
                     style=" height: 30px;">
-            </textarea>
+            </input>
                 <br />
                <label for="price"> Preis</label>
-               <input class="form-control" type="number" name="price_form" required placeholder="Preis eingeben" />
+               <input class="form-control" type="number" name="price" required placeholder="Preis eingeben" />
                 <br />
-                <input required class="form-control" type="file" name="upload" />
+                 
+        <div class="mb-3">
+          <label for="category" class="form-label">Kategorie</label>
+          <select class="form-select" id="category" name="categoryId" required>
+            <option value="">Bitte wählen</option>
+          </select>
+        </div>
+                <input required class="form-control" type="file" name="image" id="image"/>
                 <br />
-                <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                <button type="button" id="submitProduct" class="btn btn-primary">Hinzufügen</button>
                 <br />
-            </form></div> `;
-     document.getElementById('main-container').innerHTML = html;
+            </form></div> </div> `;
+
+     fetch('/items/categories')
+         .then(r => r.json())
+         .then(cats => {
+             const sel = document.getElementById('category');
+             cats.forEach(c => sel.insertAdjacentHTML('beforeend', `
+        <option value="${c.id}">${c.name}</option>
+      `));
+         });
+
+
+     document.getElementById('submitProduct').addEventListener('click',() => {
+         createProduct();
+         console.log("Button clicked");
+     })
+
  }
 
  function createProduct(){
-     document.getElementById('createProductForm').addEventListener('submit', function(e) {
-         e.preventDefault();
-         const formData = new FormData(this);
+     console.log("createProduct");
+         const form = document.getElementById('createProductForm')
+         const formData = new FormData(form);
          fetch('/items/create', {
              method: 'POST',
-             body: formData
+             body: formData,
+             credentials: 'include'
          })
 
             .then(response => {
                 if (response.ok) {
                     alert('Produkt erfolgreich erstellt!');
-                    this.reset(); // Reset the form
+
                 } else {
                     alert('Fehler beim Erstellen des Produkts.');
                 }
             })
             .catch(error => console.error('Fehler:', error));
-        }   );}
+        }
+
 

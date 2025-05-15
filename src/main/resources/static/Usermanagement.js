@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
    document.getElementById('useroverview').addEventListener('click', () => {
        viewUser();
     });
+   document.getElementById('nav-admin-customers').addEventListener('click', () => {
+       viewAllUser();
+   });
 });
 
 const LOGIN_URL     = '/api/auth/login';
@@ -99,7 +102,7 @@ function submitLoginForm() {
                 body: JSON.stringify(data)
             });
             if (resp.ok) {
-                // Nach erfolgreichem Login: Seite neu laden, Navbar-Update erfolgt in 2ndScript.js
+                // Nach erfolgreichem Login: Seite neu laden, Navbar-Update erfolgt in SessionScript.js
                 window.location.href = '/index.html';
             } else {
                 const json = await resp.json().catch(() => ({}));
@@ -219,7 +222,7 @@ function submitRegisterForm() {
             });
             const json = await resp.json().catch(() => ({}));
             if (resp.ok && json.success) {
-                // Nach erfolgreichem Register: Login laden (Navbar-Update in 2ndScript.js)
+                // Nach erfolgreichem Register: Login laden (Navbar-Update in SessionScript.js)
                 document.getElementById('login_link')?.click();
             } else {
                 showFormError(form, json.errors || ['Registrierung fehlgeschlagen']);
@@ -393,7 +396,7 @@ function loadOrders(userId) {
 
             document.getElementById('orders-container').innerHTML = `
         <div class="container col-8">
-          <h3>Meine Bestellungen</h3>
+          <h3>Bestellungen</h3>
           <table class="table table-hover" id="orders-table">
             <thead>
               <tr>
@@ -465,6 +468,61 @@ function toggleOrderDetails(e) {     //Wenn Details schon angezeigt werden, dann
             console.error(`Fehler beim Laden der Details für Order ${orderId}:`, err);
         });
 }
+
+
+
+
+
+
+function viewAllUser() {
+    fetch('/users')
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(users => {
+            const rows = users.map(user => `
+        <tr data-id="${user.id}">
+        <td>${user.username}</td>
+          <td>${user.role}</td>
+          <td>${user.active}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary toggle-user-btn" data-id="${user.id}">
+              Bestellungen anzeigen
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+            document.getElementById('main-container').innerHTML = `
+        <div class="container col-8">
+          <h3>User</h3>
+          <table class="table table-hover" id="users-table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Rolle</th>
+                <th>Aktiv</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+
+            document.querySelectorAll('.toggle-user-btn').forEach(btn => btn.addEventListener('click',()=>{
+                const userId = btn.dataset.id;
+                loadOrders(userId);
+            } ));
+        })
+        .catch(err => {
+            console.error('Fehler beim Laden der Bestellungen:', err);
+            document.getElementById('orders-container').innerHTML =
+                `<div class="alert alert-danger">Fehler: ${err.message}</div>`;
+        });
+}
+
 
 
 // Initialisierung

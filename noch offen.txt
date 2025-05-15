@@ -1,0 +1,8 @@
+noch offen:
+Rechnungen
+User deaktivieren und deren Bestellungen als Admin bearbeiten
+Gutscheine
+PW eingabe bei Stammdatenänderung
+PW Änderung
+Kategorie hinzufügen?
+Reviews?

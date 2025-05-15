@@ -1,16 +1,24 @@
 package technikum.web_shop.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import technikum.web_shop.model.Category;
 import technikum.web_shop.model.Item;
 import technikum.web_shop.repositories.ItemRepository;
 import technikum.web_shop.dto.ItemDTO;
 import technikum.web_shop.service.ItemService;
+import technikum.web_shop.repositories.CategoryRepository;
 
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @CrossOrigin
 @RestController
@@ -20,6 +28,8 @@ public class ItemController {
     @Autowired
     private ItemRepository itemRepository;
     private final ItemService itemService;
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     public ItemController(ItemService itemService) {
         this.itemService = itemService;
@@ -38,10 +48,41 @@ public class ItemController {
         return itemRepository.findById(id).orElse(null);
     }
 
-    @PostMapping("/create")
-    public Item createItem(@RequestBody Item item) {
+
+    @PostMapping(value = "/create",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Item createItem(
+            @RequestParam("name")        String name,
+            @RequestParam("description") String description,
+            @RequestParam("price")       BigDecimal price,
+            @RequestParam("categoryId")  Long categoryId,
+            @RequestParam("image") MultipartFile imageFile
+    ) throws Exception {
+        //Bild speichern in src/main/resources/static/images
+        Path imagesDir = Paths.get("src/main/resources/static/images");
+        if (!Files.exists(imagesDir)) {
+            Files.createDirectories(imagesDir);
+        }
+        String original = Paths.get(imageFile.getOriginalFilename()).getFileName().toString();
+        String filename = UUID.randomUUID() + "_" + original;
+        Path target = imagesDir.resolve(filename);
+        Files.copy(imageFile.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+
+
+        Item item = new Item();
+        item.setName(name);
+        item.setDescription(description);
+        item.setPrice(price);
+        item.setImageUrl("/images/" + filename);
+
+        Category cat = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Ungültige Kategorie"));
+        item.setCategory(cat);
+
+
         return itemRepository.save(item);
     }
+
+
     @PutMapping("/{id}")
     public Item updateItem(@PathVariable int id, @RequestBody Item item) {
         item.setId(id);

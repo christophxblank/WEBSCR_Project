@@ -1,11 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
+
     document.getElementById('nav-admin-products').addEventListener('click', function() {
         LoadHTMLmain();
-        loadProductCreationForm();});
-
-
+    });
 });
+
 
  function LoadItemPage(){
 document.getElementById("product_overview").addEventListener('click', () => {
@@ -85,9 +85,8 @@ function loadItems(categoryId = null) {
                 <p class="card-text">${item.description}</p>
                  <p class="card-text">Bewertung: ${item.rating}</p>
                 <p class="card-text" style="margin-top: auto">${item.price} €</p>    
-                <button class="btn btn-primary" style="margin-top: auto"  onclick="addToCart(${item.id})">
-                  In den Warenkorb
-                </button>
+                <button class="btn btn-primary" style="margin-top: auto"  onclick="addToCart(${item.id})">In den Warenkorb</button>
+                <button class="btn btn-warning edit-button" style="display:none" id="editButton.${item.id}">bearbeiten</button>
               </div>
             </div>
           </div>
@@ -99,7 +98,82 @@ function loadItems(categoryId = null) {
             document.getElementById('itemsList').innerHTML =
                 '<p>Fehler beim Laden der Artikel.</p>';
         });
+    adminview();}
+
+
+async function adminview() {
+    const { authenticated,userId } = await checkAuth();
+    if (!authenticated) {
+        return;
+    }
+    fetch("api/auth/session")
+        .then(res => res.json())
+        .then(data => {
+                let role = data.role;
+                if (role === "admin") {
+                    document.querySelectorAll('.edit-button').forEach(btn => {
+                        btn.style.display = 'block';
+                        btn.addEventListener('click', function() {
+                            console.log('Edit button clicked');
+                            const id = this.id.split('.')[1];
+                            loadProductEditForm(id);
+                        });
+                    });}}
+        );}
+
+
+function loadProductEditForm(id) {
+     fetch(`/items/${id}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("main-container").innerHTML = `
+                    <div class="container col-8"><div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" class="form-control" id="name" name="name" value="${data.name}">
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Beschreibung:</label>
+                        <textarea class="form-control" id="description" name="description">${data.description}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Preis:</label>
+                        <input type="number" class="form-control" id="price" name="price" value="${data.price}">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Kategorie:</label>
+                        <select class="form-control" id="category" name="category">
+                        </select>
+                       </div>
+                       <button class="btn btn-primary" id="saveItemChanges" onclick="saveProductDetails(id)">Speichern</button>
+                </div> `;
+            });
+ }
+
+function saveProductDetails(id) {
+    const updatedProduct = {
+        name: document.querySelector('#name').value,
+        price:  document.querySelector('#price').value,
+        description: document.querySelector('#description').value,
+    };
+
+    fetch(`/items/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedProduct)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(() => {
+            alert('Daten erfolgreich gespeichert!');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Fehler beim Speichern: ' + err.message);
+        });
 }
+
 
 
 
@@ -177,7 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'input',
         debounce(e => fetchSuggestions(e.target.value))
     );
-});
+});  //Suchfeld
 
 
  function loadSearchItem(id){
@@ -262,3 +336,4 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(error => console.error('Fehler:', error));
         }   );}
+

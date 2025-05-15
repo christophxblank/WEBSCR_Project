@@ -142,11 +142,11 @@ function loadProductEditForm(ItemID) {
                         <label for="price">Preis:</label>
                         <input type="number" class="form-control" id="price" name="price" value="${data.price}">
                     </div>
-                    <div class="form-group">
+                    <!--<div class="form-group">
                         <label for="category">Kategorie:</label>
                         <select class="form-control" id="category" name="category">
                         </select>
-                       </div>
+                       </div>  -->
                        <button class="btn btn-primary" id="saveItemChanges">Speichern</button>
                 </div> `;
                 document.getElementById('saveItemChanges').addEventListener('click', () => {

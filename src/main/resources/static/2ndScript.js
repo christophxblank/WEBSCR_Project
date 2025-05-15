@@ -51,19 +51,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             adminVouchers?.classList.remove('d-none');
         }
 
-        // Logout-Handler: HTTP-Session invalidieren und Seite neu laden
-        const logoutLink = document.getElementById('logoutLink');
-        logoutLink?.addEventListener('click', async e => {
-            e.preventDefault();
-            try {
-                await fetch('/logout', { method: 'POST' });
-            } catch (err) {
-                console.error('Logout fehlgeschlagen', err);
-            }
-            // Seite neu laden, um Navbar zu aktualisieren
-            window.location.reload();
+    }
+
+    const logoutLink = document.getElementById('logoutLink');  //Logout Link abfragen
+    if (logoutLink) {
+        logoutLink.addEventListener('click', () => {
+            logoutUser();
         });
     }
-});
 
 
+    });
+
+function logoutUser() {
+    // HTTP-Session invalidieren
+    fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => {
+            window.location.reload();
+        })
+        .catch(err => {
+            console.error('Logout fehlgeschlagen', err);
+        });
+}

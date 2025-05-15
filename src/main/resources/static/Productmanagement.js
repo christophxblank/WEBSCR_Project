@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
 
     document.getElementById('nav-admin-products').addEventListener('click', function() {
-        LoadHTMLmain();
+        loadProductCreationForm();
     });
 });
 
@@ -148,12 +148,37 @@ function loadProductEditForm(ItemID) {
                         </select>
                        </div>  -->
                        <button class="btn btn-primary" id="saveItemChanges">Speichern</button>
+                       <button class="btn btn-danger" id="deleteItem">Löschen</button>
                 </div> `;
                 document.getElementById('saveItemChanges').addEventListener('click', () => {
                     saveProductDetails(ItemID);
                 });
+                document.getElementById('deleteItem').addEventListener('click', () => {
+                    deleteItem(ItemID);
+                });
             });
  }
+
+ function deleteItem(id) {
+     fetch(`/items/${id}`, {
+         method: 'DELETE'
+     })
+         .then(response => {
+             if (!response.ok) {
+                 throw new Error('Network response was not ok');
+             }
+             return response.json();
+         })
+         .then(data => {
+             console.log(data);
+             loadItems();
+         })
+         .catch(error => {
+             console.error('There was a problem with the fetch operation:', error);
+         });
+ }
+
+
 
 function saveProductDetails(id) {
     const updatedProduct = {
@@ -300,10 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
  function loadProductCreationForm() {
-     let html = `<div class="container col-6"><h1> Formular</h1>
+     let html = `<div class="container col-6"><h1> Produkt hinzufügen</h1>
 
             <form  method="post" enctype="multipart/form-data">
-                <label for="product_name"> PRoduktname</label>
+                <label for="product_name"> Produktname</label>
                 <input class="form-control" id="product_name" type="text" name="product_name_form" required placeholder="Produktname eingeben" />
                 <br />
 

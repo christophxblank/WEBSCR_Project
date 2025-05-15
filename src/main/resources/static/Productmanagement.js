@@ -1,5 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
+    document.getElementById('nav-admin-products').addEventListener('click', function() {
+        LoadHTMLmain();
+        loadProductCreationForm();});
+
+
 });
 
  function LoadItemPage(){
@@ -11,6 +16,7 @@ document.getElementById("product_overview").addEventListener('click', () => {
 
 function LoadHTMLmain() {
      document.getElementById("user-container").innerHTML = "";
+    document.getElementById("orders-container").innerHTML = "";
     document.getElementById("main-container").innerHTML = `
 <div class="col-2" >
     <div class="list-group" id="categories-container">
@@ -211,6 +217,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
  }
 
+
+ function loadProductCreationForm() {
+     let html = `<div class="container col-6"><h1> Formular</h1>
+
+            <form  method="post" enctype="multipart/form-data">
+                <label for="product_name"> PRoduktname</label>
+                <input class="form-control" id="product_name" type="text" name="product_name_form" required placeholder="Produktname eingeben" />
+                <br />
+
+                <label for="descritpion"> Produktbeschreibung</label>
+                <br />
+                <textarea required class="form-control" name="descritption_form" required id="descritpion"
+                    style=" height: 30px;">
+            </textarea>
+                <br />
+               <label for="price"> Preis</label>
+               <input class="form-control" type="number" name="price_form" required placeholder="Preis eingeben" />
+                <br />
+                <input required class="form-control" type="file" name="upload" />
+                <br />
+                <button type="submit" class="btn btn-primary">Hinzufügen</button>
+                <br />
+            </form></div> `;
+     document.getElementById('main-container').innerHTML = html;
+ }
 
  function createProduct(){
      document.getElementById('createProductForm').addEventListener('submit', function(e) {

@@ -40,24 +40,33 @@ public class UserController {
                 case "password" -> user.setPassword((String) value);
                 case "email" -> user.setEmail((String) value);
                 case "phone" -> user.setPhone((String) value);
+                case "first_name"  -> user.setFirstName((String) value);
+                case "last_name"   -> user.setLastName((String) value);
 
                 case "address" -> {
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> addrMap = (Map<String, Object>) value;
-                    Address address = new Address();
-                    if (addrMap.containsKey("id")) {
-                        address.setId((Integer) addrMap.get("id"));
-                        user.setAddress(address);
+                    Address addr = user.getAddress();
+                    if (addr == null) {
+                        addr = new Address();
+                        user.setAddress(addr);
                     }
+                    if (addrMap.containsKey("street"))  addr.setStreet((String) addrMap.get("street"));
+                    if (addrMap.containsKey("plz"))     addr.setPlz((String) addrMap.get("plz"));
+                    if (addrMap.containsKey("city"))    addr.setCity((String) addrMap.get("city"));
+                    if (addrMap.containsKey("country")) addr.setCountry((String) addrMap.get("country"));
                 }
 
                 case "paymentMethod" -> {
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> payMap = (Map<String, Object>) value;
-                    PaymentMethod paymentMethod = new PaymentMethod();
                     if (payMap.containsKey("id")) {
-                        paymentMethod.setId((Integer) payMap.get("id"));
-                        user.setPaymentMethod(paymentMethod);
+                        PaymentMethod pm = new PaymentMethod();
+                        pm.setId((Integer) payMap.get("id"));
+                        user.setPaymentMethod(pm);
                     }
                 }
+
 
                 default -> throw new IllegalArgumentException("Ungültiger Schlüssel: " + key);
             }

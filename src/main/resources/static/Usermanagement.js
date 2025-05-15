@@ -234,7 +234,7 @@ function submitRegisterForm() {
 async function viewUser() {
     const { authenticated,userId } = await checkAuth();
     if (!authenticated) {
-        alert('Bitte melde dich zuerst an, um eine Bestellung aufzugeben.');
+        alert('Bitte zuerst einloggen.');
         return;
     }
     fetch("api/auth/session")
@@ -242,47 +242,52 @@ async function viewUser() {
         .then(data => {
                 let userId = data.user_id;
             loadUser(userId);
+            loadOrders(userId)
                 console.log(data);
             }
         );
 }
 
-
 function loadUser(userId){   //eventuell redundnat zu viewUserdetails in shoppingcart.js
-    fetch(`/users/${userId}`)
+    currentUserId = userId;
 
-    .then(res => res.json())
-    .then(user => {
-        console.log(user);
+    Promise.all([
+        fetch(`/users/${userId}`).then(res => res.json()),
+        fetch('/payment_methods').then(res => res.json())  // Lade Nutzerdaten und Zahlungsmethoden parallel
+    ])
+        .then(([user, paymentMethods]) => {
+            console.log(user, paymentMethods);
+
+
+            let paymentOptions = paymentMethods      // das Select bauen
+                .map(pm => `
+        <option value="${pm.id}" ${pm.id === user.payment_method.id ? 'selected' : ''}>  
+          ${pm.name}
+        </option>
+      `)
+                .join('');
+
         let HTMLCode="";
      HTMLCode +=`<div class="container col-6">
             <h1>Meine Daten</h1>
             <table class="table">
                 <tbody>
-                    <tr >
-                        <th scope="firstname">Vorname</th>
-                        <td class="editable" id="first_name">${user.first_name}</td>
-                    </tr>
-                    <tr>
-                        <th scope="lastname">Nachname</th>
-                        <td class="editable" id="last_name">${user.last_name}</td>
-                    </tr>
-                     <tr>
-                        <th scope="email">Email Adresse</th>
-                        <td class="editable" id="user_email">${user.email}</td>
-                    </tr>
-                     <tr>
-                        <th scope="adress"> Adresse</th>
-                        <td class="editable" id="adress">${user.address.street}, ${user.address.plz} ${user.address.city}, ${user.address.country}</td>
-                    </tr>
-                     <tr>
-                        <th scope="pyment_method">Zahlungsmethode</th>
-                        <td class="editable" id="payment_method">${user.payment_method.name}</td>
-                    </tr>
+                    <tr><th>Vorname</th><td class="editable" id="first_name">${user.first_name}</td></tr>
+                    <tr><th>Nachname</th><td class="editable" id="last_name">${user.last_name}</td> </tr>
+                    <tr> <th>Email Adresse</th><td class="editable" id="user_email">${user.email}</td> </tr>
+                     
+                    <tr><th>Straße</th><td class="editable" id="street">${user.address.street}</td></tr>
+                    <tr><th>PLZ</th><td class="editable" id="plz">${user.address.plz}</td></tr>
+                    <tr><th>Stadt</th><td class="editable" id="city">${user.address.city}</td></tr>
+                    <tr><th>Land</th><td class="editable" id="country">${user.address.country}</td></tr>
+                     <tr><th>Zahlungsmethode</th>
+                        <td><select id="payment_method_id" class="form-control"> ${paymentOptions}</select> </td>
+                      </tr>
                 </tbody>
                 <br />
             </table>
             <button type="button" class="btn btn-primary" id="changeUserDetails">Stammdaten bearbeiten</button>
+            <button type="button" class="btn btn-success" id="saveUserDetails" style="display:none">Änderungen speichern</button>
             <br/>
              <br/>
              
@@ -303,28 +308,163 @@ function loadUser(userId){   //eventuell redundnat zu viewUserdetails in shoppin
         document.getElementById('main-container').innerHTML = HTMLCode;
       // document.getElementById('UserContent').innerHTML = "";
     document.getElementById("changeUserDetails").addEventListener('click', function() {
+        document.getElementById("changeUserDetails").style.display = "none";
+        document.getElementById("saveUserDetails").style.display = "";
+
         EditDetails();
     })
 }) }
 
-
-
 function EditDetails() {
+    // Nur die felder mit class="editable" in Inputs umwandeln
     document.querySelectorAll('td.editable').forEach(td => {
         const text = td.textContent.trim();
         const input = document.createElement('input');
-
-        input.type  = 'text';
-        input.id    = td.id;            // gleiche ID weiterverwenden
-        input.name  = td.id;            // für Form-Serialisierung
+        input.type = 'text';
+        input.id = td.id;
+        input.name = td.id;
         input.value = text;
         input.className = 'form-control';
-
-        td.innerHTML = '';              // alten Inhalt leeren
-        td.appendChild(input);          // neues <input> setzen
+        td.innerHTML = '';
+        td.appendChild(input);
     });
+    document.getElementById("saveUserDetails").addEventListener('click', function() {
+        saveUserDetails();
+    });
+
 }
 
+function saveUserDetails() {
+    const updatedUser = {
+        first_name: document.querySelector('#first_name input').value,
+        last_name:  document.querySelector('#last_name input').value,
+        email:      document.querySelector('#user_email input').value,
+        address: {
+            street:  document.querySelector('#street input').value,
+            plz:     document.querySelector('#plz input').value,
+            city:    document.querySelector('#city input').value,
+            country: document.querySelector('#country input').value
+        },
+        paymentMethod: {
+            id: Number(document.getElementById('payment_method_id').value)
+        }
+    };
+
+    fetch(`/users/${currentUserId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedUser)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(() => {
+            alert('Daten erfolgreich gespeichert!');
+            loadUser(currentUserId);
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Fehler beim Speichern: ' + err.message);
+        });
+}
+
+
+function loadOrders(userId) {
+    fetch(`/orders?userId=${userId}`)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(orders => {
+            // Tabelle mit Buttons zum Ein-/Ausklappen
+            const rows = orders.map(o => `
+        <tr data-id="${o.id}">
+        <td>${o.id}</td>
+          <td>${o.order_date}</td>
+          <td>${o.total_price.toFixed(2)} €</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary toggle-order-btn" data-id="${o.id}">
+              Details
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+            document.getElementById('orders-container').innerHTML = `
+        <div class="container col-8">
+          <h3>Meine Bestellungen</h3>
+          <table class="table table-hover" id="orders-table">
+            <thead>
+              <tr>
+                <th>Bestellnummer</th>
+                <th>Datum</th>
+                <th>Gesamtpreis</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+
+            document.querySelectorAll('.toggle-order-btn')
+                .forEach(btn => btn.addEventListener('click', toggleOrderDetails));
+        })
+        .catch(err => {
+            console.error('Fehler beim Laden der Bestellungen:', err);
+            document.getElementById('orders-container').innerHTML =
+                `<div class="alert alert-danger">Fehler: ${err.message}</div>`;
+        });
+}
+
+function toggleOrderDetails(e) {     //Wenn Details schon angezeigt werden, dann löschen sonst laden
+    const orderId = e.currentTarget.dataset.id;
+    const row     = e.currentTarget.closest('tr');
+    const next    = row.nextElementSibling;
+
+
+    if (next && next.classList.contains('order-details-row')) {
+        next.remove();
+        return;
+    }
+
+    fetch(`/orders/${orderId}`)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(order => {
+
+            const itemsHtml = order.items.map(item => `
+        <tr>
+          <td>${item.product_name}</td>
+          <td>${item.quantity}</td>
+          <td>${item.price.toFixed(2)} €</td>
+        </tr>
+      `).join('');
+
+
+            const detailsRow = document.createElement('tr');
+            detailsRow.classList.add('order-details-row');
+            detailsRow.innerHTML = `
+        <td colspan="3" class="p-0">
+          <table class="table table-sm mb-0">
+            <thead>
+              <tr><th>Produkt</th><th>Anzahl</th><th>Preis</th></tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+        </td>
+      `;
+            row.parentNode.insertBefore(detailsRow, row.nextSibling);
+        })
+        .catch(err => {
+            console.error(`Fehler beim Laden der Details für Order ${orderId}:`, err);
+        });
+}
 
 
 // Initialisierung

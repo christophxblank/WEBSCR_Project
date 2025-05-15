@@ -1,6 +1,7 @@
 // src/main/java/technikum/web_shop/service/OrderService.java
 package technikum.web_shop.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import technikum.web_shop.dto.CartItem;
 import technikum.web_shop.model.*;
@@ -54,5 +55,12 @@ public class OrderService {
         order.setOrderItems(oiList);
         order.setTotalPrice(total);
         return orderRepo.save(order);
+    }
+    public List<Order> getOrdersByUserId(int userId) {
+        return orderRepo.findByUserId(userId);
+    }
+    public Order getOrderById(int orderId) {
+        return orderRepo.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order nicht gefunden"));
     }
 }

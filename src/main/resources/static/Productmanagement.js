@@ -92,13 +92,14 @@ function loadItems(categoryId = null) {
           </div>
         `);
             });
+            adminview();
         })
         .catch(err => {
             console.error(err);
             document.getElementById('itemsList').innerHTML =
                 '<p>Fehler beim Laden der Artikel.</p>';
         });
-    adminview();}
+    }
 
 
 async function adminview() {
@@ -110,20 +111,22 @@ async function adminview() {
         .then(res => res.json())
         .then(data => {
                 let role = data.role;
+                console.log(role);
                 if (role === "admin") {
                     document.querySelectorAll('.edit-button').forEach(btn => {
                         btn.style.display = 'block';
                         btn.addEventListener('click', function() {
                             console.log('Edit button clicked');
-                            const id = this.id.split('.')[1];
-                            loadProductEditForm(id);
+                            const ItemID = this.id.split('.')[1];
+                            loadProductEditForm(ItemID);
                         });
                     });}}
         );}
 
 
-function loadProductEditForm(id) {
-     fetch(`/items/${id}`)
+function loadProductEditForm(ItemID) {
+
+     fetch(`/items/${ItemID}`)
             .then(res => res.json())
             .then(data => {
                 document.getElementById("main-container").innerHTML = `
@@ -144,8 +147,11 @@ function loadProductEditForm(id) {
                         <select class="form-control" id="category" name="category">
                         </select>
                        </div>
-                       <button class="btn btn-primary" id="saveItemChanges" onclick="saveProductDetails(id)">Speichern</button>
+                       <button class="btn btn-primary" id="saveItemChanges">Speichern</button>
                 </div> `;
+                document.getElementById('saveItemChanges').addEventListener('click', () => {
+                    saveProductDetails(ItemID);
+                });
             });
  }
 
@@ -155,6 +161,7 @@ function saveProductDetails(id) {
         price:  document.querySelector('#price').value,
         description: document.querySelector('#description').value,
     };
+    console.log(updatedProduct);
 
     fetch(`/items/${id}`, {
         method: 'PATCH',

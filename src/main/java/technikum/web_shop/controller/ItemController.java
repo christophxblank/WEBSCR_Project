@@ -61,8 +61,21 @@ public class ItemController {
         updates.forEach((key, value) -> {
             switch (key) {
                 case "name" -> item.setName((String) value);
-                case "price" -> item.setPrice((BigDecimal) value);
-                case "stock" -> item.setStock((Integer) value);
+                case "price" -> {BigDecimal bd;
+                    if (value instanceof Number num) {
+                        bd = BigDecimal.valueOf(num.doubleValue());
+                    } else
+                    {bd = new BigDecimal(value.toString());}
+                    item.setPrice(bd); }
+
+                case "stock" -> {int stock;
+                    if (value instanceof Number num) {
+                        stock = num.intValue();}
+                    else {
+                        stock = Integer.parseInt(value.toString()); }
+                    item.setStock(stock);
+                }
+
                 case "description" -> item.setDescription((String) value);
                 case "imageUrl" -> item.setImageUrl((String) value);
                 case "category" -> {

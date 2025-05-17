@@ -251,72 +251,189 @@ async function viewUser() {
         );
 }
 
-function loadUser(userId){   //eventuell redundnat zu viewUserdetails in shoppingcart.js
+function loadUser(userId) {
     currentUserId = userId;
 
+    // Nutzer und Zahlungsmethoden laden
     Promise.all([
         fetch(`/users/${userId}`).then(res => res.json()),
-        fetch('/payment_methods').then(res => res.json())  // Lade Nutzerdaten und Zahlungsmethoden parallel
+        fetch('/payment_methods').then(res => res.json())
     ])
         .then(([user, paymentMethods]) => {
-            console.log(user, paymentMethods);
+            console.log('User:', user);
 
-
-            let paymentOptions = paymentMethods      // das Select bauen
+            // Zahlungsoptionen zusammenbauen
+            const paymentOptions = paymentMethods
                 .map(pm => `
-        <option value="${pm.id}" ${pm.id === user.payment_method.id ? 'selected' : ''}>  
-          ${pm.name}
-        </option>
-      `)
+                <option value="${pm.id}" ${user.paymentMethod?.id === pm.id ? 'selected' : ''}>
+                    ${pm.name}
+                </option>`)
                 .join('');
 
-        let HTMLCode="";
-     HTMLCode +=`<div class="container col-6">
+            // HTML für Details- und Passwort-Formular
+            const HTMLCode = `
+        <div class="container col-6">
             <h1>Meine Daten</h1>
-            <table class="table">
-                <tbody>
-                    <tr><th>Vorname</th><td class="editable" id="first_name">${user.first_name}</td></tr>
-                    <tr><th>Nachname</th><td class="editable" id="last_name">${user.last_name}</td> </tr>
-                    <tr> <th>Email Adresse</th><td class="editable" id="user_email">${user.email}</td> </tr>
-                     
-                    <tr><th>Straße</th><td class="editable" id="street">${user.address.street}</td></tr>
-                    <tr><th>PLZ</th><td class="editable" id="plz">${user.address.plz}</td></tr>
-                    <tr><th>Stadt</th><td class="editable" id="city">${user.address.city}</td></tr>
-                    <tr><th>Land</th><td class="editable" id="country">${user.address.country}</td></tr>
-                     <tr><th>Zahlungsmethode</th>
-                        <td><select id="payment_method_id" class="form-control"> ${paymentOptions}</select> </td>
-                      </tr>
-                </tbody>
-                <br />
-            </table>
-            <button type="button" class="btn btn-primary" id="changeUserDetails">Stammdaten bearbeiten</button>
-            <button type="button" class="btn btn-success" id="saveUserDetails" style="display:none">Änderungen speichern</button>
-            <br/>
-             <br/>
-             
-            <form>
-            <h4>Passwort ändern:</h4>
-            <form>
-                <label for="old_password">Altes Passwort:</label>
-                <input type="password" class="form-control" id="old_password" name="old_password" required>
+            <form id="detailsForm">
+                <table class="table">
+                    <tbody>
+                        <tr><th>Vorname</th><td class="editable" id="first_name">${user.first_name}</td></tr>
+                        <tr><th>Nachname</th><td class="editable" id="last_name">${user.last_name}</td></tr>
+                        <tr><th>E-Mail</th><td class="editable" id="user_email">${user.email}</td></tr>
+                        <tr><th>Straße</th><td class="editable" id="street">${user.address.street}</td></tr>
+                        <tr><th>PLZ</th><td class="editable" id="plz">${user.address.plz}</td></tr>
+                        <tr><th>Stadt</th><td class="editable" id="city">${user.address.city}</td></tr>
+                        <tr><th>Land</th><td class="editable" id="country">${user.address.country}</td></tr>
+                        <tr><th>Zahlungsmethode</th>
+                            <td><select id="payment_method_id" class="form-control" disabled>${paymentOptions}</select></td>
+                        </tr>
+                        <tr id="passwordRow" style="display:none;">
+                            <th>Passwort</th>
+                            <td>
+                                <input type="password" class="form-control" id="confirm_current_password" placeholder="Aktuelles Passwort eingeben">
+                                <div class="invalid-feedback">Bitte Passwort eingeben</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-primary" id="changeUserDetails">Stammdaten bearbeiten</button>
+                <button type="submit" class="btn btn-success" id="saveUserDetails" style="display:none;" disabled>Änderungen speichern</button>
+            </form>
 
-                <label >Neues Passwort:</label>
-                <input type="password" class="form-control" id="new_password" name="new_password" required>
-
-                <label for="confirm_password">Neues Passwort bestätigen:</label>
-                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                <br />
+            <hr/>
+            <h4>Passwort ändern</h4>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label for="old_password">Altes Passwort</label>
+                    <input type="password" class="form-control" id="old_password" name="old_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new_password">Neues Passwort</label>
+                    <input type="password" class="form-control" id="new_password" name="new_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm_password">Passwort bestätigen</label>
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                </div>
                 <button type="submit" class="btn btn-primary">Passwort ändern</button>
-            </form>`
-        document.getElementById('main-container').innerHTML = HTMLCode;
-      // document.getElementById('UserContent').innerHTML = "";
-    document.getElementById("changeUserDetails").addEventListener('click', function() {
-        document.getElementById("changeUserDetails").style.display = "none";
-        document.getElementById("saveUserDetails").style.display = "";
+            </form>
+        </div>`;
 
-        EditDetails();
-    })
-}) }
+            document.getElementById('main-container').innerHTML = HTMLCode;
+
+            // Zugriff auf Elemente
+            const editableFields = document.querySelectorAll('#detailsForm .editable');
+            editableFields.forEach(el => el.contentEditable = false);
+            const selectPm = document.getElementById('payment_method_id');
+            const pwRow = document.getElementById('passwordRow');
+            const pwdInput = document.getElementById('confirm_current_password');
+            const changeBtn = document.getElementById('changeUserDetails');
+            const saveBtn = document.getElementById('saveUserDetails');
+            const detailsForm = document.getElementById('detailsForm');
+
+            // Klick auf 'Stammdaten bearbeiten'
+            changeBtn.addEventListener('click', () => {
+                editableFields.forEach(el => el.contentEditable = true);
+                selectPm.disabled = false;
+                pwRow.style.display = '';
+                changeBtn.style.display = 'none';
+                saveBtn.style.display = '';
+                saveBtn.disabled = true;
+            });
+
+            // Passwort-Input überwachen, um Save-Button zu aktivieren
+            pwdInput.addEventListener('input', () => {
+                if (pwdInput.value.trim()) {
+                    saveBtn.disabled = false;
+                    pwdInput.classList.remove('is-invalid');
+                } else {
+                    saveBtn.disabled = true;
+                }
+            });
+
+            // Absenden des Details-Formulars
+            detailsForm.addEventListener('submit', async e => {
+                e.preventDefault();
+
+                const pwd = pwdInput.value.trim();
+                if (!pwd) {
+                    pwdInput.classList.add('is-invalid');
+                    return;
+                }
+
+                // Neue Daten sammeln
+                const updatedData = {
+                    oldPassword: pwd,
+                    firstName: document.getElementById('first_name').innerText.trim(),
+                    lastName: document.getElementById('last_name').innerText.trim(),
+                    email: document.getElementById('user_email').innerText.trim(),
+                    address: {
+                        street: document.getElementById('street').innerText.trim(),
+                        plz: document.getElementById('plz').innerText.trim(),
+                        city: document.getElementById('city').innerText.trim(),
+                        country: document.getElementById('country').innerText.trim()
+                    },
+                    paymentMethodId: selectPm.value
+                };
+
+                try {
+                    const res = await fetch(`/users/${currentUserId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+
+                    if (res.status === 400) {
+                        const error = await res.json();
+                        pwdInput.classList.add('is-invalid');
+                        pwdInput.nextElementSibling.textContent = error.error;
+                        return;
+                    }
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    alert('Stammdaten erfolgreich aktualisiert');
+                    loadUser(currentUserId);
+                } catch (err) {
+                    alert('Fehler beim Speichern: ' + err.message);
+                }
+            });
+
+            // Passwort-Formular bleibt unverändert
+            document.getElementById('passwordForm').addEventListener('submit', async e => {
+                e.preventDefault();
+                clearFormErrors(e.target);
+                const oldPwd = document.getElementById('old_password').value;
+                const newPwd = document.getElementById('new_password').value;
+                const confirmPwd = document.getElementById('confirm_password').value;
+                if (newPwd !== confirmPwd) {
+                    setFieldError(e.target, 'confirm_password', 'Passwörter stimmen nicht überein');
+                    return;
+                }
+                try {
+                    const res = await fetch(`/users/${currentUserId}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+                    });
+                    if (res.status === 400) {
+                        const err = await res.json();
+                        setFieldError(e.target, 'old_password', err.error);
+                        return;
+                    }
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    alert('Passwort erfolgreich geändert');
+                    e.target.reset();
+                } catch (err) {
+                    alert('Fehler beim Ändern des Passworts: ' + err.message);
+                }
+            });
+        })
+        .catch(err => console.error('Fehler beim Laden des Nutzers:', err));
+}
+
+
+
+
 
 function EditDetails() {
     // Nur die felder mit class="editable" in Inputs umwandeln

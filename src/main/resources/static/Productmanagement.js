@@ -75,10 +75,11 @@ function loadItems(categoryId = null) {
             const list = document.getElementById('itemsList');
             list.innerHTML = '';  // Reset
             data.forEach(item => {
+                const imgSrc = `${item.image_url}?t=${Date.now()}`;     // Damit die Bilder nicht aus Cache geladen werden, sondern immer vom Server (sonst sieht man das Bild von neu angelegten Produkt nicht)
                 list.insertAdjacentHTML('beforeend', `
           <div class="col-md-3 mb-3">
             <div class="card h-100">
-              <img src="${item.image_url}"
+              <img src="${imgSrc}"
                    class="card-img-top fixed-img"
                    alt="${item.name}">
               <div class="card-body">
@@ -112,7 +113,6 @@ async function adminview() {
         .then(res => res.json())
         .then(data => {
                 let role = data.role;
-                console.log(role);
                 if (role === "admin") {
                     document.querySelectorAll('.edit-button').forEach(btn => {
                         btn.style.display = 'block';
@@ -168,11 +168,9 @@ function loadProductEditForm(ItemID) {
              if (!response.ok) {
                  throw new Error('Network response was not ok');
              }
-             return response.json();
-         })
-         .then(data => {
-             console.log(data);
-             loadItems();
+             alert('Produkt erfolgreich gelöscht.');
+             LoadHTMLmain();
+             loadCategories();
          })
          .catch(error => {
              console.error('There was a problem with the fetch operation:', error);
@@ -367,7 +365,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
      document.getElementById('submitProduct').addEventListener('click',() => {
          createProduct();
-         console.log("Button clicked");
+
      })
 
  }
@@ -385,6 +383,9 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => {
                 if (response.ok) {
                     alert('Produkt erfolgreich erstellt!');
+                    LoadHTMLmain();
+                    loadCategories();
+                    loadItems();
 
                 } else {
                     alert('Fehler beim Erstellen des Produkts.');

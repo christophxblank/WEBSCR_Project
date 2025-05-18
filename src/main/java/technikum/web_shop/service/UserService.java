@@ -97,10 +97,17 @@ public class UserService {
      */
     public boolean authenticate(LoginRequest req, HttpSession session, HttpServletResponse response) {
         Optional<User> userOpt = userRepository.findByUsernameOrEmail(req.getIdentifier(), req.getIdentifier());
+
         if (userOpt.isEmpty() || !passwordEncoder.matches(req.getPassword(), userOpt.get().getPassword())) {
             return false;
         }
+
         User user = userOpt.get();
+        if (!user.isActive()) {
+            // hier bewusst eine Ausnahme werfen, damit Controller 403 liefert
+            throw new IllegalStateException("Account deaktiviert");
+        }
+
         session.setAttribute("userId", user.getId());
         session.setAttribute("userRole", user.getRole());
         if (req.isRememberMe()) {
@@ -111,6 +118,8 @@ public class UserService {
             response.addCookie(cookie);
         }
         return true;
+
+
     }
 
     public void changePassword(int userId, String oldPassword, String newPassword) {
@@ -185,4 +194,14 @@ public class UserService {
 
         userRepository.save(user);
     }
+
+    public User toggleUserActive(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User nicht gefunden: " + userId));
+        user.setActive(!user.isActive());
+        return userRepository.save(user);
+    }
+
+
+
 }

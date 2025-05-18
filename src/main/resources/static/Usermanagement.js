@@ -255,27 +255,31 @@ async function viewUser() {
         );
 }
 
-function loadUser(userId) {
+async function loadUser(userId) {
     currentUserId = userId;
 
-    // Nutzer und Zahlungsmethoden laden
-    Promise.all([
-        fetch(`/users/${userId}`).then(res => res.json()),
-        fetch('/payment_methods').then(res => res.json())
-    ])
-        .then(([user, paymentMethods]) => {
-            console.log('User:', user);
+    try {
+        // 1) Nutzerdaten und Zahlungsmethoden parallel laden
+        const [userRes, pmRes] = await Promise.all([
+            fetch(`/users/${userId}`),
+            fetch('/payment_methods')
+        ]);
+        if (!userRes.ok) throw new Error(`User-Laden fehlgeschlagen: ${userRes.status}`);
+        if (!pmRes.ok)   throw new Error(`PaymentMethod-Laden fehlgeschlagen: ${pmRes.status}`);
 
-            // Zahlungsoptionen zusammenbauen
-            const paymentOptions = paymentMethods
-                .map(pm => `
-                <option value="${pm.id}" ${user.paymentMethod?.id === pm.id ? 'selected' : ''}>
+        const user = await userRes.json();
+        const paymentMethods = await pmRes.json();
+
+        // 2) Optionen bauen (ohne selected)
+        const paymentOptions = paymentMethods
+            .map(pm => `
+                <option value="${pm.id}">
                     ${pm.name}
                 </option>`)
-                .join('');
+            .join('');
 
-            // HTML für Details- und Passwort-Formular
-            const HTMLCode = `
+        // 3) HTML zusammenbauen
+        const HTMLCode = `
         <div class="container col-6">
             <h1>Meine Daten</h1>
             <form id="detailsForm">
@@ -289,12 +293,16 @@ function loadUser(userId) {
                         <tr><th>Stadt</th><td class="editable" id="city">${user.address.city}</td></tr>
                         <tr><th>Land</th><td class="editable" id="country">${user.address.country}</td></tr>
                         <tr><th>Zahlungsmethode</th>
-                            <td><select id="payment_method_id" class="form-control" disabled>${paymentOptions}</select></td>
+                            <td>
+                                <select id="payment_method_id" class="form-control" disabled>
+                                    ${paymentOptions}
+                                </select>
+                            </td>
                         </tr>
                         <tr id="passwordRow" style="display:none;">
                             <th>Passwort</th>
                             <td>
-                                <input type="password" class="form-control" id="confirm_current_password" placeholder="Aktuelles Passwort eingeben">
+                                <input type="password" class="form-control" id="confirm_current_password" placeholder="Aktuelles Passwort">
                                 <div class="invalid-feedback">Bitte Passwort eingeben</div>
                             </td>
                         </tr>
@@ -323,117 +331,109 @@ function loadUser(userId) {
             </form>
         </div>`;
 
-            document.getElementById('main-container').innerHTML = HTMLCode;
+        // 4) HTML injizieren
+        document.getElementById('main-container').innerHTML = HTMLCode;
 
-            // Zugriff auf Elemente
-            const editableFields = document.querySelectorAll('#detailsForm .editable');
-            editableFields.forEach(el => el.contentEditable = false);
-            const selectPm = document.getElementById('payment_method_id');
-            const pwRow = document.getElementById('passwordRow');
-            const pwdInput = document.getElementById('confirm_current_password');
-            const changeBtn = document.getElementById('changeUserDetails');
-            const saveBtn = document.getElementById('saveUserDetails');
-            const detailsForm = document.getElementById('detailsForm');
+        // 5) Dropdown auf JSON-Wert setzen (snake_case payment_method)
+        const pmSelect = document.getElementById('payment_method_id');
+        if (pmSelect && user.payment_method && user.payment_method.id != null) {
+            pmSelect.value = String(user.payment_method.id);
+        }
+        pmSelect.disabled = true;
 
-            // Klick auf 'Stammdaten bearbeiten'
-            changeBtn.addEventListener('click', () => {
-                editableFields.forEach(el => el.contentEditable = true);
-                selectPm.disabled = false;
-                pwRow.style.display = '';
-                changeBtn.style.display = 'none';
-                saveBtn.style.display = '';
-                saveBtn.disabled = true;
+        // 6) Initiale UI-Setup
+        const editableFields = document.querySelectorAll('#detailsForm .editable');
+        editableFields.forEach(el => el.contentEditable = false);
+
+        const changeBtn   = document.getElementById('changeUserDetails');
+        const saveBtn     = document.getElementById('saveUserDetails');
+        const pwRow       = document.getElementById('passwordRow');
+        const pwdInput    = document.getElementById('confirm_current_password');
+        const detailsForm = document.getElementById('detailsForm');
+
+        // 7) „Stammdaten bearbeiten“-Flow
+        changeBtn.addEventListener('click', () => {
+            editableFields.forEach(el => el.contentEditable = true);
+            pmSelect.disabled = false;
+            pwRow.style.display = '';
+            changeBtn.style.display = 'none';
+            saveBtn.style.display = '';
+            saveBtn.disabled = true;
+        });
+        pwdInput.addEventListener('input', () => {
+            saveBtn.disabled = !pwdInput.value.trim();
+            if (pwdInput.value.trim()) pwdInput.classList.remove('is-invalid');
+        });
+
+        // 8) Stammdaten speichern
+        detailsForm.addEventListener('submit', async e => {
+            e.preventDefault();
+            clearFormErrors(detailsForm);
+            const pwd = pwdInput.value.trim();
+            if (!pwd) {
+                pwdInput.classList.add('is-invalid');
+                return;
+            }
+            const updatedData = {
+                oldPassword: pwd,
+                firstName: document.getElementById('first_name').innerText.trim(),
+                lastName:  document.getElementById('last_name').innerText.trim(),
+                email:     document.getElementById('user_email').innerText.trim(),
+                address: {
+                    street:  document.getElementById('street').innerText.trim(),
+                    plz:     document.getElementById('plz').innerText.trim(),
+                    city:    document.getElementById('city').innerText.trim(),
+                    country: document.getElementById('country').innerText.trim()
+                },
+                paymentMethodId: pmSelect.value
+            };
+            const res = await fetch(`/users/${currentUserId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedData)
             });
+            if (res.status === 400) {
+                const err = await res.json();
+                pwdInput.classList.add('is-invalid');
+                pwdInput.nextElementSibling.textContent = err.error;
+                return;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            alert('Stammdaten erfolgreich aktualisiert');
+            loadUser(currentUserId);
+        });
 
-            // Passwort-Input überwachen, um Save-Button zu aktivieren
-            pwdInput.addEventListener('input', () => {
-                if (pwdInput.value.trim()) {
-                    saveBtn.disabled = false;
-                    pwdInput.classList.remove('is-invalid');
-                } else {
-                    saveBtn.disabled = true;
-                }
+        // 9) Passwort-Änderung bleibt unverändert
+        document.getElementById('passwordForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            clearFormErrors(e.target);
+            const oldPwd     = document.getElementById('old_password').value;
+            const newPwd     = document.getElementById('new_password').value;
+            const confirmPwd = document.getElementById('confirm_password').value;
+            if (newPwd !== confirmPwd) {
+                setFieldError(e.target, 'confirm_password', 'Passwörter stimmen nicht überein');
+                return;
+            }
+            const res = await fetch(`/users/${currentUserId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
             });
+            if (res.status === 400) {
+                const err = await res.json();
+                setFieldError(e.target, 'old_password', err.error);
+                return;
+            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            alert('Passwort erfolgreich geändert');
+            e.target.reset();
+        });
 
-            // Absenden des Details-Formulars
-            detailsForm.addEventListener('submit', async e => {
-                e.preventDefault();
-
-                const pwd = pwdInput.value.trim();
-                if (!pwd) {
-                    pwdInput.classList.add('is-invalid');
-                    return;
-                }
-
-                // Neue Daten sammeln
-                const updatedData = {
-                    oldPassword: pwd,
-                    firstName: document.getElementById('first_name').innerText.trim(),
-                    lastName: document.getElementById('last_name').innerText.trim(),
-                    email: document.getElementById('user_email').innerText.trim(),
-                    address: {
-                        street: document.getElementById('street').innerText.trim(),
-                        plz: document.getElementById('plz').innerText.trim(),
-                        city: document.getElementById('city').innerText.trim(),
-                        country: document.getElementById('country').innerText.trim()
-                    },
-                    paymentMethodId: selectPm.value
-                };
-
-                try {
-                    const res = await fetch(`/users/${currentUserId}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(updatedData)
-                    });
-
-                    if (res.status === 400) {
-                        const error = await res.json();
-                        pwdInput.classList.add('is-invalid');
-                        pwdInput.nextElementSibling.textContent = error.error;
-                        return;
-                    }
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-
-                    alert('Stammdaten erfolgreich aktualisiert');
-                    loadUser(currentUserId);
-                } catch (err) {
-                    alert('Fehler beim Speichern: ' + err.message);
-                }
-            });
-
-            // Passwort-Formular bleibt unverändert
-            document.getElementById('passwordForm').addEventListener('submit', async e => {
-                e.preventDefault();
-                clearFormErrors(e.target);
-                const oldPwd = document.getElementById('old_password').value;
-                const newPwd = document.getElementById('new_password').value;
-                const confirmPwd = document.getElementById('confirm_password').value;
-                if (newPwd !== confirmPwd) {
-                    setFieldError(e.target, 'confirm_password', 'Passwörter stimmen nicht überein');
-                    return;
-                }
-                try {
-                    const res = await fetch(`/users/${currentUserId}`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
-                    });
-                    if (res.status === 400) {
-                        const err = await res.json();
-                        setFieldError(e.target, 'old_password', err.error);
-                        return;
-                    }
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    alert('Passwort erfolgreich geändert');
-                    e.target.reset();
-                } catch (err) {
-                    alert('Fehler beim Ändern des Passworts: ' + err.message);
-                }
-            });
-        })
-        .catch(err => console.error('Fehler beim Laden des Nutzers:', err));
+    } catch (err) {
+        console.error('Fehler beim Laden des Nutzers:', err);
+    }
 }
+
 
 
 

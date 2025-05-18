@@ -31,6 +31,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         adminProducts?.classList.add('d-none');
         adminCustomers?.classList.add('d-none');
         adminVouchers?.classList.add('d-none');
+        const couponNav = document.getElementById('nav-admin-vouchers');
+        if (couponNav) {
+            couponNav.querySelector('a')
+                .addEventListener('click', () => viewCoupons('admin-content'));
+        }
     } else {
         // Eingeloggt: Login/Register ausblenden, Logout zeigen
         loginLi?.classList.add('d-none');

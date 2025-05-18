@@ -3,6 +3,7 @@ package technikum.web_shop.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -110,5 +111,78 @@ public class UserService {
             response.addCookie(cookie);
         }
         return true;
+    }
+
+    public void changePassword(int userId, String oldPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User nicht gefunden: " + userId));
+
+        //Altes Passwort validieren
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Altes Passwort ist falsch.");
+        }
+
+        //Passwort verschlüsseln und speichern
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    public void updateUserDetails(
+            Integer userId,
+            String oldPassword,
+            Map<String, Object> updates
+    ) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User nicht gefunden: " + userId));
+
+        // 1) altes Passwort prüfen
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Altes Passwort ist falsch.");
+        }
+
+        // 2) Felder aus dem Map übernehmen
+        if (updates.containsKey("firstName")) {
+            user.setFirstName((String) updates.get("firstName"));
+        }
+        if (updates.containsKey("lastName")) {
+            user.setLastName((String) updates.get("lastName"));
+        }
+        if (updates.containsKey("email")) {
+            user.setEmail((String) updates.get("email"));
+        }
+
+        if (updates.containsKey("address")) {
+            @SuppressWarnings("unchecked")
+            Map<String, String> addr = (Map<String, String>) updates.get("address");
+            Address a = user.getAddress();
+            a.setStreet(addr.get("street"));
+            a.setPlz(addr.get("plz"));
+            a.setCity(addr.get("city"));
+            a.setCountry(addr.get("country"));
+        }
+        if (updates.containsKey("paymentMethodId")) {
+            Object pmObj = updates.get("paymentMethodId");
+            Integer pmId;
+            if (pmObj instanceof String) {
+                try {
+                    pmId = Integer.valueOf((String) pmObj);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Ungültige PaymentMethodId");
+                }
+            } else if (pmObj instanceof Number) {
+                pmId = ((Number) pmObj).intValue();
+            } else {
+                throw new IllegalArgumentException("Ungültiger Typ für PaymentMethodId");
+            }
+
+            PaymentMethod pm = paymentMethodRepository.findById(pmId)
+                    .orElseThrow(() -> new IllegalArgumentException("Zahlungsmethode ungültig: " + pmId));
+
+            user.setPaymentMethod(pm);
+        }
+
+        userRepository.save(user);
+
+        userRepository.save(user);
     }
 }

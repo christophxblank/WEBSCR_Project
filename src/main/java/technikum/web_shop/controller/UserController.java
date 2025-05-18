@@ -1,10 +1,9 @@
 package technikum.web_shop.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import technikum.web_shop.model.Address;
-import technikum.web_shop.model.PaymentMethod;
 import technikum.web_shop.model.User;
+import technikum.web_shop.service.UserService;
 import technikum.web_shop.repositories.UserRepository;
 
 import java.util.List;
@@ -15,8 +14,13 @@ import java.util.Map;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    public UserController(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -24,61 +28,56 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable int id) {
-        return userRepository.findById(id).orElse(null);
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        return userRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-
     @PatchMapping("/{id}")
-    public User patchUser(@PathVariable int id, @RequestBody Map<String, Object> updates) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) return null;
-
-        updates.forEach((key, value) -> {
-            switch (key) {
-                case "username" -> user.setUsername((String) value);
-                case "password" -> user.setPassword((String) value);
-                case "email" -> user.setEmail((String) value);
-                case "phone" -> user.setPhone((String) value);
-                case "first_name"  -> user.setFirstName((String) value);
-                case "last_name"   -> user.setLastName((String) value);
-
-                case "address" -> {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> addrMap = (Map<String, Object>) value;
-                    Address addr = user.getAddress();
-                    if (addr == null) {
-                        addr = new Address();
-                        user.setAddress(addr);
-                    }
-                    if (addrMap.containsKey("street"))  addr.setStreet((String) addrMap.get("street"));
-                    if (addrMap.containsKey("plz"))     addr.setPlz((String) addrMap.get("plz"));
-                    if (addrMap.containsKey("city"))    addr.setCity((String) addrMap.get("city"));
-                    if (addrMap.containsKey("country")) addr.setCountry((String) addrMap.get("country"));
-                }
-
-                case "paymentMethod" -> {
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> payMap = (Map<String, Object>) value;
-                    if (payMap.containsKey("id")) {
-                        PaymentMethod pm = new PaymentMethod();
-                        pm.setId((Integer) payMap.get("id"));
-                        user.setPaymentMethod(pm);
-                    }
-                }
-
-
-                default -> throw new IllegalArgumentException("Ungültiger Schlüssel: " + key);
+    public ResponseEntity<?> patchUser(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> updates
+    ) {
+        // Stammdaten-Update (kein newPassword)
+        if (updates.containsKey("oldPassword") && !updates.containsKey("newPassword")) {
+            String oldPwd = (String) updates.get("oldPassword");
+            try {
+                userService.updateUserDetails(id, oldPwd, updates);
+                return ResponseEntity.ok().build();
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("error", e.getMessage()));
             }
-        });
+        }
 
-        return userRepository.save(user);
+        // Passwort-Änderung (oldPassword + newPassword)
+        if (updates.containsKey("oldPassword") && updates.containsKey("newPassword")) {
+            String oldPwd = (String) updates.get("oldPassword");
+            String newPwd = (String) updates.get("newPassword");
+            try {
+                userService.changePassword(id, oldPwd, newPwd);
+                return ResponseEntity.ok().build();
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity
+                        .badRequest()
+                        .body(Map.of("error", e.getMessage()));
+            }
+        }
+
+        // Ungültige Payload
+        return ResponseEntity
+                .badRequest()
+                .body(Map.of("error", "Ungültiges Update-Objekt"));
     }
 
     @DeleteMapping("/{id}")
-    public void deleteUser(@PathVariable int id) {
-        userRepository.deleteById( id);
+    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+        if (!userRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        userRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
-
-
 }

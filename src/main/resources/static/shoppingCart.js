@@ -1,4 +1,4 @@
-
+let currentPaymentMethod = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/cart/session');    // Session initialisieren
@@ -128,12 +128,13 @@ function viewUserdetails(userId){
             <p><strong>Land:</strong> ${user.address.country}</p>
             <p><strong>Zahlungsart:</strong> ${user.payment_method.name}</p>
             </div>`;
+            currentPaymentMethod = user.payment_method.name;
         });
 
 }
 
 
-function loadOrder() {   //very similar to loadCart()
+function loadOrder() {   //very similar to loadCart
     fetch('/cart')
         .then(res => res.json())
         .then(cartItems => {
@@ -170,11 +171,7 @@ function loadOrder() {   //very similar to loadCart()
             document.getElementById('main-container').innerHTML = html;
             document.getElementById('ConfirmOrder').addEventListener('click', function() {
                 alert("Vielen Dank für Ihre Bestellung, Sie werden zum externen Zahlungssystem weitergeleitet.");
-
-                window.open("https://www.paypal.com/de/signin");
-
-                // Zahlungslogik mit Externen Anbietern
-
+                openPaymentSite();
 
                 fetch("/orders",
                     {
@@ -201,6 +198,21 @@ function loadOrder() {   //very similar to loadCart()
 
 }
 
+
+function openPaymentSite() {
+    let url;
+    switch (currentPaymentMethod) {
+        case "PayPal":
+            url = "https://www.paypal.com/de/signin";
+            break;
+        case "Kreditkarte":
+            url = "https://customerportal.cardcomplete.com/";
+            break;
+        default:
+            alert("Zahlungsart „" + currentPaymentMethod + "“ wird noch nicht unterstützt.");
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+}
 
 function openCartModal() {
     document.getElementById('cartModal').style.display = 'block';

@@ -1,6 +1,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
    document.getElementById('useroverview').addEventListener('click', () => {
+
        viewUser();
     });
    document.getElementById('nav-admin-customers').addEventListener('click', () => {
@@ -11,9 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
 const LOGIN_URL     = '/api/auth/login';
 const REGISTER_URL  = '/api/auth/register';
 
-/**
- * Zeigt oberhalb des Formulars eine Alert-Box mit Fehlermeldungen.
- */
+// Zeigt oberhalb des Formulars eine Alert-Box mit Fehlermeldungen.
+
 function showFormError(form, messages) {
     clearFormErrors(form);
     const alert = document.createElement('div');
@@ -22,13 +22,13 @@ function showFormError(form, messages) {
     form.prepend(alert);
 }
 
-/** Entfernt alle Alert-Boxen und Invalid-Klassen aus dem Formular */
+// Entfernt alle Alert-Boxen und Invalid-Klassen aus dem Formular
 function clearFormErrors(form) {
     form.querySelectorAll('.alert-danger').forEach(el => el.remove());
     form.querySelectorAll('.is-invalid').forEach(f => f.classList.remove('is-invalid'));
 }
 
-/** Markiert ein Feld als invalid und zeigt Inline-Feedback */
+// Markiert ein Feld als invalid und zeigt Inline-Feedback
 function setFieldError(form, fieldName, message) {
     const field = form.querySelector(`[name="${fieldName}"]`);
     if (!field) return;
@@ -42,7 +42,7 @@ function setFieldError(form, fieldName, message) {
     fb.textContent = message;
 }
 
-/** Baut und lädt das Login-Formular bei Klick */
+// Baut und lädt das Login-Formular bei Klick
 function LoadLoginForm() {
     const link = document.getElementById('login_link');
     if (!link) return;
@@ -78,7 +78,7 @@ function LoadLoginForm() {
     });
 }
 
-/** Reagiert auf das Submit des Login-Formulars */
+// Reagiert auf das Submit des Login-Formulars
 function submitLoginForm() {
     const form = document.getElementById('loginForm');
     if (!form) return;
@@ -114,7 +114,7 @@ function submitLoginForm() {
     });
 }
 
-/** Baut und lädt das Registrierungs-Formular bei Klick */
+// Baut und lädt das Registrierungs-Formular bei Klick
 function LoadRegisterForm() {
     const link = document.getElementById('register_link');
     if (!link) return;
@@ -187,7 +187,7 @@ function LoadRegisterForm() {
     });
 }
 
-/** Reagiert auf das Submit des Registrierungs-Formulars */
+// Reagiert auf das Submit des Registrierungs-Formulars
 function submitRegisterForm() {
     const form = document.getElementById('registerForm');
     if (!form) return;
@@ -235,6 +235,10 @@ function submitRegisterForm() {
 
 
 async function viewUser() {
+    document.getElementById('main-container').innerHTML = '';
+    document.getElementById('orders-container').innerHTML = '';
+    document.getElementById('user-container').innerHTML = '';
+
     const { authenticated,userId } = await checkAuth();
     if (!authenticated) {
         alert('Bitte zuerst einloggen.');
@@ -507,6 +511,7 @@ function loadOrders(userId) {
             <button class="btn btn-sm btn-outline-primary toggle-order-btn" data-id="${o.id}">
               Details
             </button>
+            <button class="btn btn-sm btn-outline-secondary print-invoice-btn" data-id="${o.id}">Rechnung drucken</button>
           </td>
         </tr>
       `).join('');
@@ -530,13 +535,105 @@ function loadOrders(userId) {
 
             document.querySelectorAll('.toggle-order-btn')
                 .forEach(btn => btn.addEventListener('click', toggleOrderDetails));
+
+            document.querySelectorAll('.print-invoice-btn').forEach(btn => btn.addEventListener('click', () => {
+                    printInvoice(btn.dataset.id);
+                }));
         })
+
         .catch(err => {
             console.error('Fehler beim Laden der Bestellungen:', err);
             document.getElementById('orders-container').innerHTML =
                 `<div class="alert alert-danger">Fehler: ${err.message}</div>`;
         });
 }
+
+async function printInvoice(orderId) {
+    // 1) Bestellung & Benutzer-Daten parallel laden
+    const [order, user] = await Promise.all([
+        fetch(`/orders/${orderId}`).then(r => r.json()),
+        fetch(`/users/${currentUserId}`).then(r => r.json())
+    ]);
+
+    // 2) Rechnungsnummer & Datum
+    const invoiceNumber = `INV-${orderId}-${new Date().toISOString().slice(0,10).replace(/-/g,'')}`;
+    const invoiceDate   = new Date().toLocaleDateString();
+
+    // 3) Artikel-Zeilen
+    const itemsHtml = order.items.map(item => {
+        const lineTotal = (item.price * item.quantity).toFixed(2);
+        return `
+      <tr>
+        <td>${item.product_name}</td>
+        <td>${item.quantity}</td>
+        <td>${item.price.toFixed(2)} €</td>
+        <td>${lineTotal} €</td>
+      </tr>`;
+    }).join('');
+
+    // 4) Gesamtsumme
+    const total = order.items
+        .reduce((sum, i) => sum + i.price * i.quantity, 0)
+        .toFixed(2);
+
+    // 5) Anschrift
+    const addr = user.address;
+    const addressHtml = `
+    <p>
+      ${user.first_name} ${user.last_name}<br>
+      ${addr.street}<br>
+      ${addr.plz} ${addr.city}<br>
+      ${addr.country}
+    </p>`;
+
+    // 6) Komplettes HTML für das neue Fenster
+    const html = `
+  <html><head>
+    <title>Rechnung ${invoiceNumber}</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { border: 1px solid #ccc; padding: 8px; }
+      th { background: #f0f0f0; }
+      h1, h3 { margin: 0; }
+    </style>
+  </head><body>
+    <h1>Rechnung</h1>
+    <p><strong>Rechnungs-Nr.:</strong> ${invoiceNumber}<br>
+    <strong>Datum:</strong> ${invoiceDate}</p>
+
+    <h3>Kundendaten</h3>
+    ${addressHtml}
+
+    <h3>Positionen</h3>
+    <table>
+      <thead>
+        <tr><th>Produkt</th><th>Anzahl</th><th>Einzelpreis</th><th>Summe</th></tr>
+      </thead>
+      <tbody>
+        ${itemsHtml}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="3" style="text-align:right"><strong>Gesamt</strong></td>
+          <td><strong>${total} €</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <script>
+      // Sobald das Fenster geladen ist, Druckdialog öffnen
+      window.onload = () => { window.print(); };
+    </script>
+  </body></html>`;
+
+    // 7) Neues Fenster öffnen und Inhalt setzen
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+}
+
+
 
 function toggleOrderDetails(e) {     //Wenn Details schon angezeigt werden, dann löschen sonst laden
     const orderId = e.currentTarget.dataset.id;
@@ -561,6 +658,8 @@ function toggleOrderDetails(e) {     //Wenn Details schon angezeigt werden, dann
           <td>${item.product_name}</td>
           <td>${item.quantity}</td>
           <td>${item.price.toFixed(2)} €</td>
+          <td><button
+              class="btn btn-sm btn-danger delete-order-item-btn" data-order-id="${orderId}" data-item-id="${item.id}">Löschen </button></td>
         </tr>
       `).join('');
 
@@ -580,14 +679,36 @@ function toggleOrderDetails(e) {     //Wenn Details schon angezeigt werden, dann
         </td>
       `;
             row.parentNode.insertBefore(detailsRow, row.nextSibling);
+            document.querySelectorAll('.delete-order-item-btn').forEach(btn => btn.addEventListener('click',()=>{
+                let OrderID = btn.dataset.orderId;
+                let ItemID = btn.dataset.itemId;
+              deleteOrderItem(OrderID,ItemID, row);
+            }));
         })
         .catch(err => {
             console.error(`Fehler beim Laden der Details für Order ${orderId}:`, err);
         });
+
 }
 
+function deleteOrderItem(orderId, itemId, originalRow) {
+    fetch(`/orders/${orderId}/${itemId}`, { method: 'DELETE' })
+        .then(res => {})
+        .then(updatedOrder => {
+            const detailsRow = originalRow.nextElementSibling;    // Aus der Zeile, in der der Button geklickt wurde, löschen
+            if (detailsRow && detailsRow.classList.contains('order-details-row')) {
+                detailsRow.remove();
+            }
 
 
+            const toggleBtn = document.querySelector(`.toggle-order-btn[data-id="${orderId}"]`);  //  damit aktualisierte Liste angezeigt wird:
+            if (toggleBtn) toggleBtn.click();
+        })
+        .catch(err => {
+            console.error('Fehler beim Löschen des OrderItem:', err);
+            alert('Konnte Position nicht löschen: ' + err.message);
+        });
+}
 
 
 
@@ -602,14 +723,18 @@ function viewAllUser() {
         <tr data-id="${user.id}">
         <td>${user.username}</td>
           <td>${user.role}</td>
-          <td>${user.active}</td>
+          <td>${user.active ? 'Aktiv' : 'Deaktiviert'}</td>
           <td>
             <button class="btn btn-sm btn-outline-primary toggle-user-btn" data-id="${user.id}">
               Bestellungen anzeigen
             </button>
+            <button class="btn btn-sm btn-outline-danger deactivate-user-btn" data-id="${user.id}">
+              User deaktivieren
+            </button>
           </td>
         </tr>
       `).join('');
+
 
             document.getElementById('main-container').innerHTML = `
         <div class="container col-8">
@@ -627,6 +752,10 @@ function viewAllUser() {
           </table>
         </div>
       `;
+            document.querySelectorAll('.deactivate-user-btn').forEach(btn => btn.addEventListener('click',()=>{
+                const userId = btn.dataset.id;
+                deactivateUser(userId);
+            } ));
 
             document.querySelectorAll('.toggle-user-btn').forEach(btn => btn.addEventListener('click',()=>{
                 const userId = btn.dataset.id;
@@ -640,6 +769,19 @@ function viewAllUser() {
         });
 }
 
+
+function deactivateUser(userId) {
+    fetch(`/users/admin/${userId}`, { method: 'PATCH' })
+        .then(res => {
+            if (!res.ok) throw new Error(res.statusText);
+            return res.json();
+        })
+        .then(user => {
+            alert(user.active ? 'User ist jetzt aktiv' : 'User wurde deaktiviert');
+            viewAllUser();  // Liste neu laden
+        })
+        .catch(err => alert('Fehler: ' + err.message));
+}
 
 
 // Initialisierung

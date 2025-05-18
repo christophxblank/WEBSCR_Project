@@ -63,4 +63,15 @@ public class OrderService {
         return orderRepo.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order nicht gefunden"));
     }
+
+    public void deleteOrderItem(int orderId, int itemId) {
+        Order order = getOrderById(orderId);
+        // Finde das OrderItem anhand seiner ID
+        OrderItem toRemove = order.getOrderItems().stream()
+                .filter(oi -> oi.getId() == itemId)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("OrderItem nicht gefunden"));
+        order.removeOrderItem(toRemove);
+        orderRepo.save(order);
+    }
 }

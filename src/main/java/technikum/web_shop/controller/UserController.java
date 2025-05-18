@@ -80,4 +80,15 @@ public class UserController {
         userRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+
+    @PatchMapping("/admin/{id}")
+    public ResponseEntity<User> toggleActive(@PathVariable Integer id) {
+        User updated = userService.toggleUserActive(id);
+        return ResponseEntity.ok(updated);
+    }
+
+
+
+
 }

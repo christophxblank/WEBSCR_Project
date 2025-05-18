@@ -53,14 +53,23 @@ public class AuthController {
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest req,
                                               HttpSession session,
                                               HttpServletResponse response) {
-        boolean success = userService.authenticate(req, session, response);
-        if (success) {
-            // Login erfolgreich
-            return ResponseEntity.ok(new AuthResponse(true, null));
-        } else {
-            // Ungültige Zugangsdaten
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new AuthResponse(false, List.of("Ungültige Zugangsdaten")));
+
+        try {
+            boolean success = userService.authenticate(req, session, response);
+            if (success) {
+                // Login erfolgreich
+                return ResponseEntity.ok(new AuthResponse(true, null));
+            } else {
+                // Ungültige Zugangsdaten
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new AuthResponse(false, List.of("Ungültige Zugangsdaten")));
+            }
+        }
+        catch (IllegalStateException ex) {
+            // Account ist deaktiviert
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .body(new AuthResponse(false, List.of(ex.getMessage())));
         }
     }
 

@@ -71,5 +71,15 @@ public class OrderController {
                         .toList()
         );
     }
+    @DeleteMapping("/{orderId}/{itemId}")
+    public OrderDTO deleteOrderItem(
+            @PathVariable int orderId,
+            @PathVariable int itemId) {
+        // 1) Im Service das Item löschen
+        orderService.deleteOrderItem(orderId, itemId);
+        // 2) Aktuellen Stand der Bestellung holen und als DTO zurückgeben
+        Order updated = orderService.getOrderById(orderId);
+        return toDto(updated);
+    }
 
 }

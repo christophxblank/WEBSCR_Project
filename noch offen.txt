@@ -1,6 +1,9 @@
 noch offen:
-Rechnungen
-User deaktivieren und deren Bestellungen als Admin bearbeiten
-Gutscheine
-Kategorie hinzufügen?
 Reviews?
+
+
+Optional:
+    bei Item löschen auch das Bild lokal entfernen
+    Kategorie hinzufügen?
+    Gutscheine
+    nachdem der Admin ein Produkt aus einer Bestellung löscht, ist der Gesamtpreis noch unverändert

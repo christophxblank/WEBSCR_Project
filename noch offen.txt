@@ -1,9 +1,0 @@
-noch offen:
-Reviews?
-
-
-Optional:
-    bei Item löschen auch das Bild lokal entfernen
-    Kategorie hinzufügen?
-    Gutscheine
-    nachdem der Admin ein Produkt aus einer Bestellung löscht, ist der Gesamtpreis noch unverändert

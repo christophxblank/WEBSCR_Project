@@ -1,10 +1,16 @@
 
 document.addEventListener('DOMContentLoaded', () => {
-   document.getElementById('useroverview').addEventListener('click', () => {
 
+   document.getElementById('useroverview').addEventListener('click', () => {
+       document.getElementById('orders-container').innerHTML = '';
+       document.getElementById('admin-content').innerHTML = '';
        viewUser();
     });
    document.getElementById('nav-admin-customers').addEventListener('click', () => {
+       document.getElementById('orders-container').innerHTML = '';
+       document.getElementById('admin-content').innerHTML = '';
+       document.getElementById('user-container').innerHTML = '';
+       document.getElementById('main-container').innerHTML = '';
        viewAllUser();
    });
 });

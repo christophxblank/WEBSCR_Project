@@ -1,8 +1,14 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     LoadItemPage();
 
+
+
     document.getElementById('nav-admin-products').addEventListener('click', function() {
         document.getElementById('orders-container').innerHTML = '';
+        document.getElementById('admin-content').innerHTML = '';
+        document.getElementById('user-container').innerHTML = '';
+        document.getElementById('main-container').innerHTML = '';
         loadProductCreationForm();
     });
 });
@@ -18,6 +24,7 @@ document.getElementById("product_overview").addEventListener('click', () => {
 function LoadHTMLmain() {
      document.getElementById("user-container").innerHTML = "";
     document.getElementById("orders-container").innerHTML = "";
+    document.getElementById('admin-content').innerHTML = '';
     document.getElementById("main-container").innerHTML = `
 <div class="col-2" >
     <div class="list-group" id="categories-container">

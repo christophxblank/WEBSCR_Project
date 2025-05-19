@@ -14,6 +14,7 @@ const couponHtml = `
 
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/cart/session');    // Session initialisieren
+
     setupCart();
     document.getElementById("OrderButton")?.addEventListener("click", () => {
         viewOrder();

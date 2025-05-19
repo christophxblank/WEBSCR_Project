@@ -1,9 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('orders-container').innerHTML = '';
     // Klick auf Coupon-Nav-Link bindet das Modul an den Admin-Content
     const couponNav = document.getElementById('nav-admin-vouchers');
     if (couponNav) {
         couponNav.querySelector('a')
-            .addEventListener('click', () => viewCoupons('admin-content'));
+            .addEventListener('click', () => {
+                document.getElementById('orders-container').innerHTML = '';
+                document.getElementById('user-container').innerHTML = '';
+                document.getElementById('main-container').innerHTML = '';
+                viewCoupons('admin-content')
+
+            });
     }
 });
 
